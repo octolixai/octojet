@@ -46,7 +46,7 @@ class Stream:
     notes: list = field(default_factory=list)
     reuse: str | None = None                              # "exact" | "extend" | "checkpoint" | None: the kept state this admission used
     reuse_miss: str | None = None                         # "busy": a kept state matched but was decoding another request; else None
-    reuse_copy: bool = False                              # the exact hit's state was copied from a decoding twin's slot
+    reuse_copy: bool = False                              # the state was copied from a decoding stream's slot (twin or fork)
 
     def take(self, new: list[int], eos: Sequence[int] = ()) -> None:
         """Append a round's tokens and emit them; the stream ends at its count, an end token or a stop."""

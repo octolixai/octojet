@@ -259,10 +259,14 @@ def test_prefill_steps_aligns_chunk_ends_and_takes_corrected_checkpoints(allocat
     st.pos = 0
     decode.prefill(e, list(range(30)), None, resume={"state": {"pos": 5, "mtp_len": 4}, "tail": torch.zeros(1, 1)},
                    checkpoints=[16, 24, 29])
-    assert [c[1:] for c in calls] == [(5, 3), (8, 8), (16, 8), (24, 6)]        # ends at 8, 16, 24: aligned
+    # ends at 8, 16, 24 (aligned), and 29: an unaligned checkpoint (F7's turn start) cuts its chunk there
+    assert [c[1:] for c in calls] == [(5, 3), (8, 8), (16, 8), (24, 5), (29, 1)]
     assert [(c.pos, c.snapshot["mtp_len"], float(c.tail[0, 0])) for c in e.checkpoints] == [(16, 15, 15.0),
-                                                                                           (24, 23, 23.0)]
+                                                                                           (24, 23, 23.0),
+                                                                                           (29, 28, 28.0)]
     assert decode.chunk_starts(0, 17, 8) == [0, 8, 16] and decode.chunk_starts(9, 10, 8) == [9]
+    assert decode.chunk_starts(0, 17, 8, cuts=[3, 8, 17, 0, 20]) == [0, 3, 8, 16]   # only cuts inside the fill
+    assert decode.chunk_starts(9, 30, 8, cuts=[12]) == [9, 12, 16, 24]
 
     def oom(self):
         raise torch.OutOfMemoryError("CUDA out of memory (simulated)")

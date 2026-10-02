@@ -278,15 +278,18 @@ def run_steps(steps) -> int:
             return stop.value
 
 
-def chunk_starts(begin: int, total: int, rows: int) -> list[int]:
+def chunk_starts(begin: int, total: int, rows: int, cuts=()) -> list[int]:
     """Chunk starts from ``begin``: chunk ends fall on absolute multiples of ``rows`` (F2d 5.1), so the checkpoints of
-    prompts that share a prefix line up; after an unaligned resume the first chunk only reaches the next multiple."""
+    prompts that share a prefix line up; after an unaligned resume the first chunk only reaches the next multiple.
+    ``cuts`` (F7: a turn-start checkpoint) also end a chunk there; the chunks after it stay on the multiples. A row's
+    bits never depend on its chunk, so a cut moves only where a snapshot can be taken."""
 
     starts, at = [], begin
     while at < total:
         starts.append(at)
         at = (at // rows + 1) * rows
-    return starts
+    extra = sorted({int(c) for c in cuts if begin < int(c) < total} - set(starts))
+    return sorted(starts + extra)
 
 
 def take_checkpoint(e: Engine, end: int, tail: torch.Tensor, use_mtp: bool) -> None:
@@ -349,12 +352,13 @@ def prefill_steps(e: Engine, prompt: Sequence[int], sampling: Sampling | None, *
         if vision is not None:
             image_rows = torch.tensor(vision.rows, dtype=torch.int64, device=vision.features.device)
             positions = vision.positions.t().contiguous()            # [prompt, 3] int32
-    starts = chunk_starts(begin, len(prompt), e.prefill_rows)
+    starts = chunk_starts(begin, len(prompt), e.prefill_rows, cuts=wanted)
     for i, start in enumerate(starts):
         with torch.no_grad():
             try:
                 chunk = list(prompt[start:starts[i + 1] if i + 1 < len(starts) else len(prompt)])
                 R = len(chunk)
+                chunk_index = start // e.prefill_rows            # (a turn-start cut shares its chunk's index)
                 TIMER.chunk, TIMER.rows, TIMER.pos = chunk_index, R, start
                 if 0 <= chunk_index < len(TIMER.chunk_rows):
                     TIMER.chunk_rows[chunk_index] = R

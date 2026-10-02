@@ -20,7 +20,8 @@ files used and says so ("config-matched").
 
 | Name in tables | Engine | Checkpoint |
 |---|---|---|
-| Octojet | Octojet at e53e17d (run 1) and 78c1215 (run 2; engine identical to the published release candidate 230c695) | Octojet mixed NVFP4 as served in production: routed experts from `RadixArk/Qwen3.8-Flash-Next-NVFP4` @ 7b719225242aacd3dbd3f9407468c2ee9a9d2594 (read from a locally derived `-fp8hybrid` copy of that revision, made by blazux/qwen3.8-Flash-DGX @ bd60fcb, whose shared experts are FP8), everything else from `Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` main @ 2b170fa6309d5d1ee380b35636075fac7945f286 (config-matched; download revision not recorded). The published checkpoint takes its shared experts from RadixArk's bf16 copy instead and is re-verified separately |
+| Octojet | Octojet at e53e17d (run 1), 78c1215 (run 2) and 542715f (run 3; engine identical to the published release candidate 230c695) | Octojet mixed NVFP4 as served in production: routed experts from `RadixArk/Qwen3.8-Flash-Next-NVFP4` @ 7b719225242aacd3dbd3f9407468c2ee9a9d2594 (read from a locally derived `-fp8hybrid` copy of that revision, made by blazux/qwen3.8-Flash-DGX @ bd60fcb, whose shared experts are FP8), everything else from `Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` main @ 2b170fa6309d5d1ee380b35636075fac7945f286 (config-matched; download revision not recorded). The published checkpoint takes its shared experts from RadixArk's bf16 copy instead and is re-verified separately |
+| TF 0.6.2 + lil, TF 0.6.2 + RadixArk (run 3) | TensorFold v0.6.2 (tag commit 56e2e3ec), the latest release on 2 Oct 2026; default mode and `--precision full` | the two checkpoints below |
 | TF 0.6 + lil | TensorFold v0.6.0 (tag commit c4646171139ee8a3c38103eaa1699dad226ec12b), the latest release on 1 Oct 2026 | `local-inference-lab/Qwen3.8-Flash-Next-NVFP4` revision 7c4f1bc1a2d6847e0cbc01ac6b823f00251de8dd (99 GB on disk) |
 | TF 0.6 + RadixArk | TensorFold v0.6.0 (same commit) | `RadixArk/Qwen3.8-Flash-Next-NVFP4` revision 7b719225242aacd3dbd3f9407468c2ee9a9d2594, as published (126 GB on disk) |
 
@@ -32,6 +33,37 @@ How to reproduce: `bench/spark/compare-upstream.sh` (run 1: full mode, accuracy 
 `CONFIGS="ours up-lil"`), timing via `bench/cmp_probe.py`, decode via `engine/tools/bench_openai.py`, agent steps via
 `bench/agent_bench.py`, accuracy via `bench/acc_eval.py` + `bench/run_humaneval.sh`. Details and notes:
 `results/2026-10-01-compare-upstream.md`.
+
+## Head-to-head against TensorFold v0.6.2 (run 3, 2 Oct 2026, ~17:10-18:25 UTC)
+
+Octojet 542715f (branch f7: requests admitted while a prompt fills, forks beside a decoding stream, turn-start
+checkpoints; every token identical to the previous build) against TensorFold v0.6.2 (tag commit 56e2e3ec), the
+latest release on 2 Oct 2026, on both checkpoints, in its default mode and with `--precision full` (16-bit
+activations against 4-bit weights, as Octojet runs). All five servers logged bf16 prompt activations on this machine,
+and default and full agree within 3%. Same settings as above; accuracy not rerun (ACC=0). Octojet's load time is with
+its packed-table cache already built.
+
+| Measure | Octojet | TF 0.6.2 + lil | TF 0.6.2 + lil, full | TF 0.6.2 + RadixArk | TF 0.6.2 + RadixArk, full |
+|---|---:|---:|---:|---:|---:|
+| Cold 32k-token prompt, first token | 15.6 | 19.9 | 19.6 | 22.4 | 22.3 |
+| Cold 128k-token prompt, first token | 68.8 | 87.2 | 84.7 | 96.2 | 95.0 |
+| Cold 210k-token prompt, first token | 124.0 | 150.1 | 146.2 | 165.3 | 164.4 |
+| Cold 71k-token prompt, first token | 32.2 | 45.0 | 45.0 | 51.8 | 51.1 |
+| Prompt sharing 69k of those 71k tokens | 3.2 | 45.0 | 45.1 | 49.8 | 49.2 |
+| The 71k prompt resent | 0.13 | 0.32 | 0.19 | 0.21 | 0.19 |
+| Decode, code prompt, temperature 1 (tok/s) | 64.3 | 50.1 | 50.1 | 39.9 | 39.7 |
+| Decode, chat prompt, temperature 1 (tok/s) | 62.9 | 41.8 | 41.7 | 31.4 | 31.4 |
+| Decode, code prompt, greedy (tok/s) | 54.9 | 51.1 | 51.0 | 42.9 | 42.9 |
+| Decode, chat prompt, greedy (tok/s) | 88.6 | 40.1 | 39.9 | 34.7 | 34.7 |
+| Agent: 80k-token first turn, first token | 53.2 | 67.5 | 67.4 | 75.0 | 74.4 |
+| Agent: +5k-token follow-up, first token (median of 3) | 4.39 | 5.27 | 5.27 | 6.46 | 6.67 |
+| Agent: +5k-token follow-up, whole step (median of 3) | 11.9 | 14.3 | 14.3 | 22.8 | 23.5 |
+| A short prompt sent while a cold 128k prompt fills, first token | 3.16 | 2.95 | 3.62 | 4.07 | 4.52 |
+| A resend sent while a cold 128k prompt fills, first token | 1.12 | 1.94 | 2.62 | 3.15 | 3.60 |
+| That 128k prompt's own first token | 63.5 | 89.6 | 86.5 | 96.9 | 94.5 |
+| Longest pause of a live reply while a 128k prompt arrives | 2.52 | 1.61 | 1.61 | 1.79 | 1.78 |
+| Startup memory estimate | 87.2 GiB | 81.2 GiB | 81.2 GiB | 97.4 GiB | 97.4 GiB |
+| Load time | 66 s | 201 s | 82 s | 92 s | 91 s |
 
 ## Head-to-head: speed (run 1, 1 Oct 2026 19:06-19:46 UTC)
 

@@ -156,12 +156,14 @@ class FlashNextEngine:
             from tensorfold.cuda.scheduler import Scheduler
 
             from .multi import MultiDecoder
+            from .prefix import message_start_id
 
             self.e = None
             self.multi = MultiDecoder(w, slots=streams, capacity=self.max_len, depth=self.depth,
                                       confidence=self.confidence, keep=KEEP, kv_dtype=self.kv_dtype,
                                       prefill_rows=rows, vision=self.vision,
-                                      prefix_checkpoints=self.prefix_checkpoints)
+                                      prefix_checkpoints=self.prefix_checkpoints,
+                                      turn_marker=message_start_id(model_dir))
             self.scheduler = Scheduler(self.multi, max_streams=streams)
         else:
             self.e = Engine(w, capacity=self.max_len, max_rows=max(8, self.depth + 1), prefill_rows=rows,

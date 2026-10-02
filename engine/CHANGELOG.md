@@ -3,6 +3,23 @@
 Octojet is a fork of TensorFold 0.3.6.2 (commit 71377a5). The sections from 0.3.6.2 down are upstream TensorFold's
 release notes, kept as they were; their commands read `tensorfold ...`, which is `octojet ...` here.
 
+## 0.1.1 (unreleased)
+
+- **Requests are admitted while a prompt fills.** With `--parallel`, a prompt filling with nothing else decoding now
+  stops between chunks when a request is waiting and a stream is free, so a short prompt or a resend is admitted
+  (an identical resend decodes at once) instead of waiting for the whole fill. The next chunk goes to the prompt with
+  the fewest rows left; a prompt passed over 8 chunks in a row goes first. Idea from TensorFold 0.6.1 ("short
+  prompts admitted while a long one fills"); Octojet's own implementation.
+- **Forks beside a decoding stream.** A prompt that extends, or shares a checkpoint with, a prompt whose reply is
+  still decoding now copies the shared rows into a spare slot and resumes there, instead of filling cold
+  (`reuse: "extend"` or `"checkpoint"` with `reuse_copy: true`). Idea from TensorFold 0.6.1 ("forks that resume
+  from their shared prefix"); Octojet's own implementation.
+- **Follow-up turns resume at the last message start.** One of the `--prefix-checkpoints` snapshots is taken where
+  the prompt's last message starts (`<|im_start|>`), so the next turn of a conversation, or a variant that changes
+  only its last message, resumes there instead of up to a chunk earlier. Idea from TensorFold 0.6.0 (the next
+  thinking turn resumes from the kept prompt); Octojet's own implementation.
+- Replies are unchanged by all three: drafted replies equal serial ones and concurrent replies equal solo runs.
+
 ## 0.1.0 (October 2026)
 
 The first Octojet release. Measured numbers are in `docs/benchmarks.md` at the repository root. Supported and

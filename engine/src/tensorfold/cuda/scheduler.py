@@ -155,6 +155,8 @@ class Scheduler:
         self.waiting: queue.Queue = queue.Queue()
         self.held: list[tuple[Stream, queue.Queue, float]] = []   # requests waiting for a twin's fill, oldest first
         self.boxes: dict[int, queue.Queue] = {}
+        if hasattr(decoder, "arrived"):              # a lone fill stops between chunks for a request it could admit
+            decoder.arrived = self.admissible
         self.thread = threading.Thread(target=self._loop, daemon=True)
         self.thread.start()
 
@@ -181,6 +183,12 @@ class Scheduler:
                 raise value
             else:
                 return value
+
+    def admissible(self) -> bool:
+        """Whether a waiting request could be admitted now: one is queued and a stream is free (held requests wait
+        for a twin's fill and are checked through ``short_fill``)."""
+
+        return not self.waiting.empty() and self.decoder.live() < self.max_streams
 
     def _next(self, first=None):
         """The next request to admit: a held one whose twin's fill has ended (or that waited TWIN_WAIT_S), else the

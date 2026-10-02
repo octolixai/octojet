@@ -112,8 +112,9 @@ def test_prompts_that_extend_a_finished_stream_resume_from_its_slot(sampling, kv
 @pytest.mark.parametrize("kv_dtype", ["bf16", "int8"])
 def test_prompts_fill_between_rounds_while_streams_decode(kv_dtype):
     """Ported from upstream TensorFold d23087c (one prompt a pass, the pass between rounds): a prompt queued beside a
-    decoding stream prefills a chunk a round while it keeps decoding; a burst queues behind it, oldest first; every
-    stream emits its solo run."""
+    decoding stream prefills a chunk a round while it keeps decoding. Since F7 the prompt with the fewest rows left
+    fills first, so the short prompts of a burst finish filling before the long one; every stream emits its solo
+    run."""
 
     w = _model()
     g = torch.Generator().manual_seed(11)
@@ -135,12 +136,16 @@ def test_prompts_fill_between_rounds_while_streams_decode(kv_dtype):
     rest = [Stream(p, 24, smp) for p, smp in zip(prompts[1:], samplings[1:])]
     for s in rest:
         dec.admit(s, defer=True)
-    grew = []
+    grew, left = [], []                                              # first's growth a round; order prompts finish filling
     while rest[0] in dec.filling:
+        filling = [s for s in rest if s in dec.filling]
         before = len(first.out)
         dec.finish(dec.round())
         grew.append(len(first.out) - before)
-    assert len(grew) == 5 and all(n > 0 for n in grew)               # a chunk a round; the first stream decodes
+        left += [rest.index(s) for s in filling if s not in dec.filling]
+    assert all(n > 0 for n in grew)                                   # the first stream decodes every round
+    assert 5 <= len(grew) <= 7                                        # the long prompt's five chunks, plus at most a
+    assert left[-1] == 0 and set(left[:-1]) <= {1, 2}                 # round each for the short ones, which go first
     while dec.live():
         dec.finish(dec.round())
     assert [s.out for s in [first, *rest]] == refs

@@ -4,7 +4,7 @@
   python3 docs/images/make_charts.py        # writes docs/images/*.png
 
 Every number below is copied from docs/benchmarks.md (the single source); change them there first.
-Versions: Octojet e53e17d / 78c1215; TensorFold v0.6.0 (c4646171) with local-inference-lab NVFP4 @ 7c4f1bc1 and
+Versions: Octojet 542715f (speed, run 3) and 78c1215 (accuracy, run 2); TensorFold v0.6.2 (56e2e3ec) for speed and v0.6.0 for accuracy with local-inference-lab NVFP4 @ 7c4f1bc1 and
 RadixArk NVFP4 @ 7b719225; one DGX Spark (GB10), int8 KV, --parallel 3.
 """
 from pathlib import Path
@@ -15,22 +15,22 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 OUT = Path(__file__).resolve().parent
-WHO = ["Octojet", "TensorFold 0.6 + local-inference-lab", "TensorFold 0.6 + RadixArk"]
+WHO = ["Octojet", "TensorFold 0.6.2 + local-inference-lab", "TensorFold 0.6.2 + RadixArk"]
 COLOR = ["#1d5fa8", "#c2683f", "#e0b39b"]
 INK, MUTED, RULE = "#16202c", "#5b6876", "#d9e0e7"
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10, "text.color": INK, "axes.labelcolor": INK,
                      "xtick.color": MUTED, "ytick.color": INK, "axes.edgecolor": RULE})
 
-# run 1, 1 Oct 2026 (docs/benchmarks.md "Head-to-head: speed")
+# run 3, 2 Oct 2026 (docs/benchmarks.md "Head-to-head against TensorFold v0.6.2"; upstream with --precision full)
 SPEED = [
-    ("Cold 128k-token prompt, first token", "s", True, [68.9, 89.5, 96.0]),
-    ("Cold 210k-token prompt, first token", "s", True, [117.9, 152.3, 166.4]),
-    ("Prompt sharing 69k of 71k tokens with an earlier one", "s", True, [3.2, 47.4, 50.0]),
-    ("Agent follow-up step (+5k tokens), median", "s", True, [11.8, 14.9, 22.0]),
-    ("Decode, chat, sampled", "tok/s", False, [62.0, 42.0, 31.4]),
-    ("Decode, code, sampled", "tok/s", False, [64.0, 50.5, 40.4]),
-    ("Decode, chat, greedy", "tok/s", False, [89.6, 40.2, 35.1]),
-    ("Decode, code, greedy", "tok/s", False, [55.4, 51.2, 43.4]),
+    ("Cold 128k-token prompt, first token", "s", True, [68.8, 84.7, 95.0]),
+    ("Cold 210k-token prompt, first token", "s", True, [124.0, 146.2, 164.4]),
+    ("Prompt sharing 69k of 71k tokens with an earlier one", "s", True, [3.2, 45.1, 49.2]),
+    ("Agent follow-up step (+5k tokens), median", "s", True, [11.9, 14.3, 23.5]),
+    ("Decode, chat, sampled", "tok/s", False, [62.9, 41.7, 31.4]),
+    ("Decode, code, sampled", "tok/s", False, [64.3, 50.1, 39.7]),
+    ("Decode, chat, greedy", "tok/s", False, [88.6, 39.9, 34.7]),
+    ("Decode, code, greedy", "tok/s", False, [54.9, 51.0, 42.9]),
 ]
 
 
@@ -53,7 +53,7 @@ def speed_chart():
     handles = [plt.Rectangle((0, 0), 1, 1, color=c) for c in COLOR]
     fig.legend(handles, WHO, loc="upper center", ncol=3, frameon=False, fontsize=10, bbox_to_anchor=(0.5, 1.0))
     fig.text(0.5, 0.005, "One DGX Spark (GB10), int8 KV cache, 3 streams, text only, same prompts; client-side times. "
-             "TensorFold v0.6.0 (c4646171); local-inference-lab @ 7c4f1bc1; RadixArk @ 7b719225. Run 1, 1 Oct 2026.",
+             "TensorFold v0.6.2 (56e2e3ec, --precision full); local-inference-lab @ 7c4f1bc1; RadixArk @ 7b719225. Run 3, 2 Oct 2026.",
              ha="center", fontsize=8, color=MUTED, wrap=True)
     fig.tight_layout(rect=(0, 0.03, 1, 0.96))
     fig.savefig(OUT / "speed-vs-upstream.png", dpi=150, facecolor="white")
@@ -69,7 +69,7 @@ def accuracy_chart():
         for yi, v in zip([1, 0], vals):
             ax.text(v + n * 0.01, yi, f"{v} / {n}", va="center", fontsize=9)
         ax.set_xlim(0, n * 1.2)
-        ax.set_yticks([1, 0], ["Octojet", "TF 0.6 + lil"], fontsize=9)
+        ax.set_yticks([1, 0], ["Octojet", "TF 0.6.0 + lil"], fontsize=9)
         ax.set_title(title, fontsize=10, loc="left")
         for side in ("top", "right"):
             ax.spines[side].set_visible(False)

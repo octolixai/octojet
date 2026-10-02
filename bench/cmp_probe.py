@@ -7,6 +7,9 @@ number here is measured on the client, the same way for every engine.
   cmp_probe.py text --tokenizer TOKENIZER.json MANIFEST.json... --out-dir DIR    # ids -> DIR/<tag>.txt (container)
   cmp_probe.py ttft BASE MODEL --prompt FILE.txt --label L --out ROWS.jsonl [--max-tokens 64]
   cmp_probe.py gap  BASE MODEL --prompt FILE.txt --out GAP.json   # largest token gap of a live stream while FILE is admitted
+  cmp_probe.py queue BASE MODEL --prompt LONG.txt --short SHORT.txt --repeat REPEAT.txt --out QUEUE.json [--delay 5]
+      # first tokens of a cold short prompt and of a resent (cacheable) prompt sent while LONG fills with nothing
+      # else decoding: the queueing a classifier or a second agent sees behind a long prompt
 
 ttft rows: label, prompt_tokens (server's usage), ttft_s (request sent -> first text), decode_tps (tokens after the
 first / time after the first), total_s, and reuse / cached when the server's stats block reports them (else null).
@@ -105,18 +108,49 @@ def cmd_gap(a):
     return 0 if "error" not in res else 1
 
 
+def cmd_queue(a):
+    """REPEAT is sent once (so an engine with a prompt cache keeps it), then LONG; --delay seconds later the cold SHORT,
+    one second after that REPEAT again. Each one's TTFT is measured from its own send; LONG's too."""
+    body = lambda text, n: {"model": a.model, "prompt": text, "max_tokens": n, "temperature": 0}
+    repeat, short = open(a.repeat).read(), open(a.short).read()
+    post_stream(a.base, body(repeat, 4))                          # keep it (if the engine keeps prompts)
+    got, threads = {}, []
+
+    def run(name, text, n):
+        try:
+            sent, first, end, usage, stats, _ = post_stream(a.base, body(text, n))
+            got[name] = {"ttft_s": round((first or end) - sent, 3), "prompt_tokens": usage.get("prompt_tokens"),
+                         "reuse": stats.get("reuse"), "cached": stats.get("cached")}
+        except Exception as exc:                                  # recorded: the other numbers still matter
+            got[name] = {"error": str(exc)}
+
+    for name, text, n, wait in (("long", open(a.prompt).read(), 4, 0.0), ("short", short, 16, a.delay),
+                                ("repeat", repeat, 16, 1.0)):
+        time.sleep(wait)
+        t = threading.Thread(target=run, args=(name, text, n), daemon=True); t.start(); threads.append(t)
+    for t in threads:
+        t.join(3600)
+    res = {"delay_s": a.delay, **{f"{k}_{f}": v for k, d in got.items() for f, v in d.items()}}
+    print(json.dumps(res))
+    json.dump(res, open(a.out, "w"), indent=1)
+    return 0 if all("error" not in d for d in got.values()) and len(got) == 3 else 1
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     t = sub.add_parser("text"); t.add_argument("--tokenizer", required=True); t.add_argument("manifests", nargs="+")
     t.add_argument("--out-dir", required=True)
-    for name in ("ttft", "gap"):
+    for name in ("ttft", "gap", "queue"):
         p = sub.add_parser(name); p.add_argument("base"); p.add_argument("model")
         p.add_argument("--prompt", required=True); p.add_argument("--out", required=True)
         if name == "ttft":
             p.add_argument("--label", required=True); p.add_argument("--max-tokens", type=int, default=64)
+        if name == "queue":
+            p.add_argument("--short", required=True); p.add_argument("--repeat", required=True)
+            p.add_argument("--delay", type=float, default=5.0)
     a = ap.parse_args()
-    return {"text": cmd_text, "ttft": cmd_ttft, "gap": cmd_gap}[a.cmd](a) or 0
+    return {"text": cmd_text, "ttft": cmd_ttft, "gap": cmd_gap, "queue": cmd_queue}[a.cmd](a) or 0
 
 
 if __name__ == "__main__":

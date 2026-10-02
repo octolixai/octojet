@@ -1,10 +1,17 @@
 """Flash Next's concurrent rounds on one GPU: every stream keeps exactly its own accepted prefix.
 
 Prompts inside rounds (a port of upstream TensorFold d23087c's lanes, its one-prompt-a-pass subset): on the scheduler
-path an admission only picks the slot and queues the prompt; each round first runs the next chunk of the oldest filling
-prompt, so live streams keep decoding a round per chunk instead of waiting out the whole prefill. With nothing decoding
-the prompt fills chunk after chunk until it joins. The chunks are ``prefill_steps``'s, the same kernels on the same rows
-as a solo ``prefill``; a stream's rows never read another stream's state, so every stream emits its solo tokens."""
+path an admission only picks the slot and queues the prompt; each round first runs the next chunk of a filling prompt
+(see below for which), so live streams keep decoding a round per chunk instead of waiting out the whole prefill. With
+nothing decoding the prompt fills chunk after chunk until it joins (or a request can be admitted). The chunks are ``prefill_steps``'s, the same kernels on the same rows
+as a solo ``prefill``; a stream's rows never read another stream's state, so every stream emits its solo tokens.
+
+Admission between chunks (F7; the idea of TensorFold 0.6.1's "short prompts admitted while a long one fills", Octojet's
+own implementation): with nothing decoding, the chunks of a lone fill stop as soon as the scheduler holds a request it
+could admit (``arrived``), so that request is admitted (an exact hit decodes at once) instead of waiting out the whole
+prompt. The next chunk goes to the filling prompt with the fewest rows left, unless one has been passed over
+``FILL_GUARD`` chunks in a row (it goes first, so a long prompt is never starved). Order moves only when a prompt's
+rows run; every chunk is still its prompt's own ``prefill_steps`` chunk, so no stream's tokens change."""
 
 from __future__ import annotations
 
@@ -22,9 +29,11 @@ from tensorfold.engine.exact_sampling import MARGIN, choose_rows
 from .decode import PREFILL_ROWS, WARM_TAIL, Engine, draft, prefill, prefill_steps
 from .forward import commit, compute, stage
 from .mtp import mtp_compute, mtp_stage
-from .prefix import Kept, Match, exact_hit, match, plan_checkpoints, snapshot_bytes
+from .prefix import Kept, Match, exact_hit, match, plan_checkpoints, snapshot_bytes, turn_start
 from .state import Buffers, State
 from ..cuda import CONFIDENCE, DEPTH
+
+FILL_GUARD = 8           # a filling prompt passed over this many chunks in a row takes the next one (no starvation)
 
 
 def _handoff(m: Match | None) -> dict | None:
@@ -38,12 +47,14 @@ def _handoff(m: Match | None) -> dict | None:
 
 
 class _Fill:
-    """A queued prompt's prefill: its engine, the ``prefill_steps`` generator, its prefix match and image features."""
+    """A queued prompt's prefill: its engine, the ``prefill_steps`` generator, its prefix match and image features,
+    the prompt rows committed so far (``at``) and the chunks run for other prompts since its own last one."""
 
-    __slots__ = ("e", "mtp", "steps", "m", "image", "encoded")
+    __slots__ = ("e", "mtp", "steps", "m", "image", "encoded", "at", "skipped", "order")
 
-    def __init__(self, e, mtp, steps, m, image, encoded) -> None:
+    def __init__(self, e, mtp, steps, m, image, encoded, at: int = 0, order: int = 0) -> None:
         self.e, self.mtp, self.steps, self.m, self.image, self.encoded = e, mtp, steps, m, image, encoded
+        self.at, self.skipped, self.order = at, 0, order
 
 
 def _slot(w, st: State, buf: Buffers, mbuf: Buffers, pbuf: Buffers, capacity: int) -> Engine:
@@ -60,7 +71,7 @@ class MultiDecoder:
 
     def __init__(self, w, *, slots: int, capacity: int, depth: int = DEPTH, confidence: float = CONFIDENCE,
                  stop_eos: bool = True, keep: int = 8, kv_dtype: str = "bf16", prefill_rows: int = PREFILL_ROWS,
-                 vision=None, prefix_checkpoints: int = 0) -> None:
+                 vision=None, prefix_checkpoints: int = 0, turn_marker: int | None = None) -> None:
         if w.comm is not None:
             raise ValueError("concurrent Flash Next runs on one GPU for now")
         self.w, self.depth, self.confidence, self.capacity = w, depth, confidence, capacity
@@ -74,6 +85,7 @@ class MultiDecoder:
         if prefix_checkpoints < 0:
             raise ValueError(f"--prefix-checkpoints is a count of 0 or more, not {prefix_checkpoints}")
         self.checkpoints = int(prefix_checkpoints)  # F2d stage B: chunk-boundary snapshots a kept entry holds, at most
+        self.turn_marker = turn_marker               # F7: the message-start token one of those checkpoints follows
         # a stream's slot, plus the checkpoints its kept entry may hold (lazily allocated; in the startup estimate)
         self.slot_bytes = sum(t.numel() * t.element_size() for t in _tensors(self.free[0])) + \
             (self.checkpoints * (snapshot_bytes(w.cfg) + w.cfg.streams * w.cfg.hidden * 2) if self.checkpoints else 0)
@@ -106,6 +118,10 @@ class MultiDecoder:
                    if s.draft and not self.fills[s.sid].image] if reuse else []
         m, miss = match(prompt, self.kept + pending,
                         lambda k: id(k.slot) not in busy and k.snapshot is not None) if reuse else (None, None)
+        if miss in ("extend", "checkpoint"):   # a decoding stream's entry reuses more: fork from it beside it
+            fork = self._fork(prompt, busy, m.cached if m is not None else 0)
+            if fork is not None:
+                return fork
         if m is not None:
             if m.kind == "checkpoint":     # a variant: resume in another slot when one is spare, so a resend of the
                 other = self._spare_except(m.entry.slot)   # source stays an exact hit (the source is likely asked again)
@@ -125,6 +141,25 @@ class MultiDecoder:
             self._drop_kept(idle)
             self.free.append(idle)
         return self.free.pop(), None, miss
+
+    def _fork(self, prompt: list[int], busy: set[int], idle_cached: int):
+        """(slot, match, None) for a prompt that extends, or shares a checkpoint with, a kept entry whose slot a live
+        stream is decoding in, when that reuses more than ``idle_cached`` tokens and a spare slot exists: the source's
+        rows below the resume point are copied into the spare slot (``copy_from``) and the prompt resumes there, as a
+        variant resumed beside an idle source does (F7; the idea of TensorFold 0.6.1's forks that resume from their
+        shared prefix, Octojet's own implementation). The source's rows below its prompt end never change while it
+        decodes, and its snapshots are read-only. None: no such entry or no spare slot (the prompt fills cold)."""
+
+        live = [k for k in self.kept if id(k.slot) in busy and k.snapshot is not None]
+        m, _ = match(prompt, live, lambda k: True)
+        if m is None or m.kind not in ("extend", "checkpoint") or m.cached <= idle_cached:
+            return None
+        spare = self._spare_except(m.entry.slot)
+        if spare is None:
+            return None
+        m.copy_from, m.forked = m.entry.slot, True
+        self.kept = [k for k in self.kept if k is not m.entry] + [m.entry]      # recency: the source was used
+        return spare, m, None
 
     def _busy_twin(self, prompt: list[int]) -> Kept | None:
         """The newest kept entry holding exactly ``prompt`` whose slot a live stream is using (its twin decodes), when
@@ -250,7 +285,8 @@ class MultiDecoder:
         if reuse and n > 0 and not exact:
             cached = m.cached if m is not None else 0
             take, inherit = plan_checkpoints(len(s.prompt), self.pbuf.rows, n,
-                                             m.entry.checkpoints if m is not None else [], cached)
+                                             m.entry.checkpoints if m is not None else [], cached,
+                                             turn=turn_start(s.prompt, getattr(self, "turn_marker", None)))
         beside = m is not None and m.copy_from is not None
         if m is not None and not exact and not beside:   # the source was dropped: its checkpoints go (or moved over)
             m.entry.checkpoints = []
@@ -260,6 +296,7 @@ class MultiDecoder:
             mtp = s.draft and self.depth > 0 and self.mbuf is not None
             if beside:                      # the source's rows below the checkpoint, then an ordinary resume here
                 st.copy_prefix(m.copy_from, m.cached, m.resume["state"]["mtp_len"], self.w.cfg.index_ratio)
+                s.reuse_copy = m.forked     # (forked: copied from a decoding stream's slot)
             if twin is not None:            # its rows, then an exact hit on the copy: the same bits as on the twin's
                 st.copy_prefix(twin.slot, len(twin.ids), twin.snapshot["mtp_len"], self.w.cfg.index_ratio)
                 # the twin's checkpoints are shared, not cloned: read-only snapshots, valid over the copied rows
@@ -277,7 +314,7 @@ class MultiDecoder:
                 s.reuse = m.kind if m is not None else None
                 s.sid, s.st = self.next_id, st
                 self.next_id += 1
-                self.fills[s.sid] = _Fill(e, mtp, steps, m, image, encoded)
+                self.fills[s.sid] = _Fill(e, mtp, steps, m, image, encoded, at=s.cached, order=s.sid)
                 self.filling.append(s)
                 queued = True
                 s.prefill_s = time.perf_counter() - t0
@@ -348,20 +385,39 @@ class MultiDecoder:
                 torch.cuda.empty_cache()
         return f
 
+    arrived = staticmethod(lambda: False)            # a request waits that could be admitted (set by Scheduler)
+
     def _fill(self) -> list[Stream]:
-        """The next prompt chunk(s) before a round: one chunk of the oldest filling prompt beside decoding streams,
-        else chunks until a prompt joins. Returns the streams that ended here (failed, or done at their first token)."""
+        """The next prompt chunk(s) before a round: one chunk beside decoding streams, else chunks until a prompt
+        joins or a waiting request can be admitted. Returns the streams that ended here (failed, or done at their
+        first token)."""
 
         ended: list[Stream] = []
         while self.filling:
             ended += self._chunk()
-            if getattr(self, "short_fill", False) or any(not x.done for x in self.streams.values()):
+            if getattr(self, "short_fill", False) or any(not x.done for x in self.streams.values()) or \
+                    self.arrived():
                 break                                    # (short_fill: the scheduler holds requests with deadlines)
         return ended
 
+    def _next_fill(self) -> Stream:
+        """The filling prompt whose chunk runs next: one passed over ``FILL_GUARD`` chunks in a row first (the longest
+        passed over), then the fewest prompt rows left, then the earliest admitted."""
+
+        def key(s: Stream):
+            f = self.fills[s.sid]
+            due = f.skipped >= FILL_GUARD
+            return (not due, -f.skipped if due else 0, len(s.prompt) - f.at, f.order)
+
+        return min(self.filling, key=key)
+
     def _chunk(self) -> list[Stream]:
-        s = self.filling[0]
+        s = self._next_fill()
         f = self.fills[s.sid]
+        for x in self.filling:                           # a chunk for s: every other filling prompt was passed over
+            if x is not s:
+                self.fills[x.sid].skipped += 1
+        f.skipped = 0
         t0 = time.perf_counter()
         joining = False
         x3 = getattr(self.w, "x3", None) is not None    # EXL3 stages every buffer's n-gram rows in one pinned array:
@@ -369,7 +425,7 @@ class MultiDecoder:
             try:
                 if x3:                                   # the round's copies out of it are done before the chunk's
                     self.buf.staged.synchronize()
-                next(f.steps)                            # one chunk, committed
+                f.at = next(f.steps)                     # one chunk, committed: the rows done so far
                 if x3:                                   # and the chunk's before the next round writes it
                     self.pbuf.staged.synchronize()
                 s.prefill_s += time.perf_counter() - t0

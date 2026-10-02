@@ -9,8 +9,10 @@ lets a new prompt reuse the most tokens."""
 
 from __future__ import annotations
 
+import json
 import math
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable
 
 import numpy as np
@@ -45,6 +47,7 @@ class Match:
     resume: dict | None          # {"state", "tail"} for extend / checkpoint; None for exact
     copy_from: Any = None        # checkpoint resumed in another slot: the source's slot, whose rows below cached are
                                  # copied first so the source entry (its exact state) survives (scheduler path)
+    forked: bool = False         # copy_from is a decoding stream's slot (a fork beside a busy source, F7)
 
 
 def common_prefix(a, b) -> int:
@@ -141,15 +144,51 @@ def thin(positions: list[int], n: int, protect=()) -> list[int]:
     return pos
 
 
+MESSAGE_START = "<|im_start|>"
+
+
+def message_start_id(model_dir) -> int | None:
+    """The id of the chat template's message-start token (``<|im_start|>``) in the checkpoint's ``tokenizer.json``
+    added tokens; None when the file or the token is missing (then no turn-start checkpoint is planned)."""
+
+    try:
+        data = json.loads((Path(model_dir) / "tokenizer.json").read_text())
+    except (OSError, ValueError):
+        return None
+    for t in data.get("added_tokens", []) if isinstance(data, dict) else []:
+        if isinstance(t, dict) and t.get("content") == MESSAGE_START and isinstance(t.get("id"), int):
+            return t["id"]
+    return None
+
+
+def turn_start(prompt, marker: int | None) -> int | None:
+    """The position of the prompt's last message start: the index of the last ``marker`` (``<|im_start|>``) token,
+    so the tokens before it are a checkpoint's prefix (F7). A follow-up turn repeats the conversation up to and past
+    that marker (its thinking-on generation prompt is what the next turn renders differently), and a variant that only
+    changes its last message shares it too. None: no marker, or only at position 0."""
+
+    if marker is None or len(prompt) < 2:
+        return None
+    ids = np.asarray(prompt, dtype=np.int64)
+    hits = np.flatnonzero(ids[1:] == int(marker))
+    return int(hits[-1]) + 1 if hits.size else None
+
+
 def plan_checkpoints(total_len: int, rows: int, n: int, inherited: list[Checkpoint],
-                     cached: int) -> tuple[list[int], list[Checkpoint]]:
+                     cached: int, turn: int | None = None) -> tuple[list[int], list[Checkpoint]]:
     """Before a prefill from ``cached``: the positions to take and the inherited checkpoints to keep, together at
-    most ``n`` (spec 5.3). Inherited checkpoints above ``cached`` are invalid and never kept."""
+    most ``n`` (spec 5.3). Inherited checkpoints above ``cached`` are invalid and never kept. ``turn`` (F7): the
+    prompt's last message start (``turn_start``), planned and protected beside the tail when it lies inside the fill
+    (above ``cached``, below the prompt's end); it need not be a chunk end (the prefill splits a chunk there)."""
 
     keep_pos = {c.pos for c in inherited if c.pos <= cached}
     planned = boundaries(total_len, rows, n)
+    if n > 0 and turn is not None and cached < turn < total_len and turn not in planned:
+        planned = sorted(planned + [turn])
     new = [p for p in planned if p > cached]
     tail = set(planned[-tail_count(n):]) if planned else set()   # the new prompt's end stays covered, new or inherited
+    if n > 0 and turn is not None and cached < turn < total_len:
+        tail.add(turn)
     final = set(thin(sorted(keep_pos | set(new)), n, protect=tail))
     take = sorted(p for p in new if p in final)
     keep = [c for c in inherited if c.pos <= cached and c.pos in final]

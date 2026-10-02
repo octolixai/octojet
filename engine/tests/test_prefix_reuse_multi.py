@@ -1,5 +1,5 @@
 """The concurrent decoder's kept entries: exact hits skip the prefill and sample with the new request's parameters,
-busy duplicates are copied and hit exact, busy extend misses are reported, the serial reference stays fresh, and a failed admission at any
+busy duplicates are copied and hit exact, busy extends fork beside their source (F7), the serial reference stays fresh, and a failed admission at any
 step — slot set-up through the first token's emission — leaves nothing kept, no stream registered and the slot free."""
 
 import importlib
@@ -126,14 +126,32 @@ def test_busy_duplicate_copies_the_twins_kept_state_and_hits_exact(allocations, 
     assert len(dec.kept) == 2 and not dec.free            # both slots stay kept
 
 
-def test_a_busy_extend_entry_is_still_a_busy_miss(allocations, monkeypatch):  # noqa: F811
+def test_a_busy_extend_entry_forks_beside_it(allocations, monkeypatch):  # noqa: F811
+    """F7: a prompt extending a decoding stream's kept prompt copies its rows into the spare slot and resumes there
+    (no busy miss, no cold fill); the source stays kept in its own slot."""
+
     multi = importlib.import_module("tensorfold.families.qwen4_exp.cuda.multi")
     log = []
     dec = decoder(multi, 2, monkeypatch, log)
     a = admit(dec, [1, 2, 3])                             # decoding: its entry is busy
-    c = admit(dec, [1, 2, 3, 4])                          # would extend it: cold in the other slot, the miss reported
-    assert c.reuse is None and c.reuse_miss == "busy" and c.cached == 0 and not COPIES
-    assert ("prefill", (1, 2, 3, 4), None) in log and c.st is not a.st
+    c = admit(dec, [1, 2, 3, 4])                          # extends it: a fork beside it
+    assert c.reuse == "extend" and c.reuse_miss is None and c.cached == 3 and c.reuse_copy and c.st is not a.st
+    assert COPIES and COPIES[0][:3] == (a.st.name, c.st.name, 3)
+    assert not any(x[0] == "prefill" and x[2] is None for x in log[1:])     # resumed, not filled cold
+    assert any(k.slot is a.st for k in dec.kept)          # the source's entry survives
+
+
+def test_a_fork_needs_a_spare_slot_and_more_tokens_than_the_idle_match(allocations, monkeypatch):  # noqa: F811
+    multi = importlib.import_module("tensorfold.families.qwen4_exp.cuda.multi")
+    dec = decoder(multi, 2, monkeypatch, [])
+    admit(dec, [1, 2, 3])
+    admit(dec, [7, 8, 9])                                 # both slots decode: no spare slot to fork into
+    assert dec._fork([1, 2, 3, 4], dec._busy(), 0) is None
+    dec = decoder(multi, 3, monkeypatch, [])
+    admit(dec, [1, 2, 3])
+    assert dec._fork([1, 2, 3, 4], dec._busy(), 3) is None          # an idle match reusing as much wins
+    slot, m, miss = dec._fork([1, 2, 3, 4], dec._busy(), 2)
+    assert m.kind == "extend" and m.forked and m.cached == 3 and miss is None and slot in dec.free + [slot]
 
 
 def test_the_copy_evicts_the_least_recently_used_idle_entry_and_never_the_twin(allocations, monkeypatch):  # noqa: F811

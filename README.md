@@ -11,12 +11,13 @@ NVFP4 + MLX 4-bit checkpoint, an on-disk cache of packed expert tables, faster l
 prompts and shared prefixes), image and video input, prompts that prefill inside decode rounds, and tools that build
 and check the published checkpoint. The full list is in [`engine/CHANGELOG.md`](engine/CHANGELOG.md).
 
-**On one DGX Spark, against the fastest published setup (TensorFold v0.6.0 on the published NVFP4 checkpoints):**
-about 1.3x faster on long prompts and agent steps, 1.1-2.2x faster decode, 9-15x faster on prompts that share a long
-prefix with an earlier one, and the same accuracy. It is not lighter: it needs about 6 GiB more memory than the
-smallest published checkpoint. Details, versions and methods: [`docs/benchmarks.md`](docs/benchmarks.md).
+**On one DGX Spark, against the fastest published setup (TensorFold v0.6.2, its latest release, on the published
+NVFP4 checkpoints):** about 1.2x faster on long prompts and agent steps, 1.1-2.2x faster decode, about 14x faster on
+prompts that share a long prefix with an earlier one, and the same accuracy. It is not lighter: it needs about 6 GiB
+more memory than the smallest published checkpoint, and a live reply pauses longer while a long prompt arrives.
+Details, versions and methods: [`docs/benchmarks.md`](docs/benchmarks.md).
 
-![Octojet against TensorFold 0.6 on the published NVFP4 checkpoints, one DGX Spark](docs/images/speed-vs-upstream.png)
+![Octojet against TensorFold 0.6.2 on the published NVFP4 checkpoints, one DGX Spark](docs/images/speed-vs-upstream.png)
 
 ## Quick start
 
@@ -52,34 +53,44 @@ Versions compared:
 
 | Name in tables | Engine | Checkpoint |
 |---|---|---|
-| Octojet | Octojet at e53e17d (run 1) and 78c1215 (run 2) | Octojet mixed NVFP4 as served in production (routed experts from `RadixArk/Qwen3.8-Flash-Next-NVFP4` @ 7b719225, everything else from `Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` @ 2b170fa6) |
-| TF 0.6 + lil | TensorFold v0.6.0 (c4646171), the latest release on 1 Oct 2026 | `local-inference-lab/Qwen3.8-Flash-Next-NVFP4` @ 7c4f1bc1 |
-| TF 0.6 + RadixArk | TensorFold v0.6.0 (c4646171) | `RadixArk/Qwen3.8-Flash-Next-NVFP4` @ 7b719225, as published |
+| Octojet | Octojet at 542715f (run 3); e53e17d / 78c1215 in the earlier runs | Octojet mixed NVFP4 as served in production (routed experts from `RadixArk/Qwen3.8-Flash-Next-NVFP4` @ 7b719225, everything else from `Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` @ 2b170fa6) |
+| TF 0.6.2 + lil | TensorFold v0.6.2 (56e2e3ec), the latest release on 2 Oct 2026, with `--precision full` | `local-inference-lab/Qwen3.8-Flash-Next-NVFP4` @ 7c4f1bc1 |
+| TF 0.6.2 + RadixArk | TensorFold v0.6.2 (56e2e3ec), with `--precision full` | `RadixArk/Qwen3.8-Flash-Next-NVFP4` @ 7b719225, as published |
 
-Run 1, 1 Oct 2026 (charted at the top of this page). Seconds unless stated; lower is better for times, higher for
+Run 3, 2 Oct 2026 (charted at the top of this page). Seconds unless stated; lower is better for times, higher for
 decode.
 
-| Measure | Octojet | TF 0.6 + lil | TF 0.6 + RadixArk |
+| Measure | Octojet | TF 0.6.2 + lil | TF 0.6.2 + RadixArk |
 |---|---:|---:|---:|
-| Cold 128k-token prompt, first token | 68.9 | 89.5 | 96.0 |
-| Cold 210k-token prompt, first token | 117.9 | 152.3 | 166.4 |
-| Cold 71k-token prompt, first token | 32.4 | 46.1 | 52.6 |
-| Variant sharing 69k of those 71k tokens | 3.2 | 47.4 | 50.0 |
-| Decode, code prompt, temperature 1 (tok/s) | 64.0 | 50.5 | 40.4 |
-| Decode, chat prompt, temperature 1 (tok/s) | 62.0 | 42.0 | 31.4 |
-| Decode, code prompt, greedy (tok/s) | 55.4 | 51.2 | 43.4 |
-| Decode, chat prompt, greedy (tok/s) | 89.6 | 40.2 | 35.1 |
-| Agent: 80k-token first turn, first token | 53.5 | 68.3 | 77.0 |
-| Agent: +5k-token follow-up, first token (median of 3) | 4.29 | 5.40 | 6.29 |
-| Agent: +5k-token follow-up, whole step (median of 3) | 11.8 | 14.9 | 22.0 |
-| Longest pause of a live reply while a 128k prompt arrives | 2.34 | 1.64 | 2.26 |
-| Startup memory estimate | 87.2 GiB | 81.1 GiB | 97.4 GiB |
+| Cold 32k-token prompt, first token | 15.6 | 19.6 | 22.3 |
+| Cold 128k-token prompt, first token | 68.8 | 84.7 | 95.0 |
+| Cold 210k-token prompt, first token | 124.0 | 146.2 | 164.4 |
+| Cold 71k-token prompt, first token | 32.2 | 45.0 | 51.1 |
+| Prompt sharing 69k of those 71k tokens | 3.2 | 45.1 | 49.2 |
+| The 71k prompt resent | 0.13 | 0.19 | 0.19 |
+| Decode, code prompt, temperature 1 (tok/s) | 64.3 | 50.1 | 39.7 |
+| Decode, chat prompt, temperature 1 (tok/s) | 62.9 | 41.7 | 31.4 |
+| Decode, code prompt, greedy (tok/s) | 54.9 | 51.0 | 42.9 |
+| Decode, chat prompt, greedy (tok/s) | 88.6 | 39.9 | 34.7 |
+| Agent: 80k-token first turn, first token | 53.2 | 67.4 | 74.4 |
+| Agent: +5k-token follow-up, first token (median of 3) | 4.39 | 5.27 | 6.67 |
+| Agent: +5k-token follow-up, whole step (median of 3) | 11.9 | 14.3 | 23.5 |
+| A short prompt sent while a cold 128k prompt fills, first token | 3.16 | 3.62 | 4.52 |
+| A resend sent while a cold 128k prompt fills, first token | 1.12 | 2.62 | 3.60 |
+| Longest pause of a live reply while a 128k prompt arrives | 2.52 | 1.61 | 1.78 |
+| Startup memory estimate | 87.2 GiB | 81.2 GiB | 97.4 GiB |
 | Context windows | 3 × 262,144 reserved | up to 3 × 262,144 | up to 3 × 262,144 |
-| Load time | 150 s | 205 s | 87 s |
+| Load time (Octojet's packed-table cache warm) | 66 s | 82 s | 91 s |
 
-Run 2, 1-2 Oct 2026: Octojet 78c1215 against TF 0.6 + lil; greedy, thinking off, the same requests for both.
+`--precision full` runs 16-bit activations against the 4-bit weights, as Octojet does. TensorFold's default mode was
+measured too: on this machine it also logged bf16 prompt activations, and its results were within 3% of these
+(every column is in [`docs/benchmarks.md`](docs/benchmarks.md)).
 
-| Measure | Octojet | TF 0.6 + lil |
+Accuracy, run 2, 1-2 Oct 2026: Octojet 78c1215 against TensorFold v0.6.0 + lil; greedy, thinking off, the same
+requests for both. Octojet's later changes keep every token identical (checked on every build), so its accuracy is
+unchanged.
+
+| Measure | Octojet | TF 0.6.0 + lil |
 |---|---:|---:|
 | Cold 32k-token prompt, first token | 18.2 s | 19.8 s |
 | A second, different cold 32k prompt | 16.9 s | 19.8 s |
@@ -87,11 +98,12 @@ Run 2, 1-2 Oct 2026: Octojet 78c1215 against TF 0.6 + lil; greedy, thinking off,
 | GSM8K, first 250 test problems | 0.980 (245) | 0.984 (246) |
 | HumanEval pass@1, 164 programs | 0.945 (155) | 0.963 (158) |
 
-![Accuracy: Octojet against TensorFold 0.6 + local-inference-lab](docs/images/accuracy.png)
+![Accuracy: Octojet against TensorFold 0.6.0 + local-inference-lab](docs/images/accuracy.png)
 
-Where Octojet does not lead: TF 0.6 + lil needs about 6 GiB less memory, scores 3 more HumanEval programs, and pauses
-a live reply less while a long prompt arrives. Notes on superseded rows, the comparison with the MLX 4-bit checkpoint,
-the earlier vLLM and EXL3 baseline and Octojet's production history are in [`docs/benchmarks.md`](docs/benchmarks.md).
+Where Octojet does not lead: TensorFold + lil needs about 6 GiB less memory, scores 3 more HumanEval programs, and
+pauses a live reply less while a long prompt arrives (1.6 s against 2.5 s). Runs 1 and 2 against v0.6.0, the
+comparison with the MLX 4-bit checkpoint, the earlier vLLM and EXL3 baseline and Octojet's production history are in
+[`docs/benchmarks.md`](docs/benchmarks.md).
 
 ### Octojet in production
 

@@ -62,6 +62,10 @@ def collect(out, c):
         d["agent follow-up step total (median)"] = statistics.median(tot) if tot else None
     g = load(os.path.join(out, f"{c}-gap.json")) or {}
     d["live-stream gap during m128k"] = g.get("a_max_gap_s")
+    q = load(os.path.join(out, f"{c}-queue.json")) or {}
+    d["queue: m128k ttft"] = q.get("long_ttft_s")
+    d["queue: cold short ttft during m128k"] = q.get("short_ttft_s")
+    d["queue: resend ttft during m128k"] = q.get("repeat_ttft_s")
     acc = last_json(os.path.join(out, f"{c}-acc-summary.json")) or {}
     d["GSM8K"] = acc.get("gsm8k_acc")
     he = last_json(os.path.join(out, f"{c}-acc.jsonl.humaneval.txt")) or {}
