@@ -1,0 +1,11 @@
+{"check":"layout","ok":true,"regs_ok":true,"a_found":true,"b_found":true,"combined_ok":true,"a_sel":0,"a_pat":0,"b_sel":0}
+{"bench":"fp4","rows":1,"ms":0.1414,"ms_min":0.1366,"ms_max":0.1436,"flops":9.8304e+07}
+{"bench":"fp4_parts","rows":1,"quant":0.0209,"up":0.0859,"swiglu":0,"down":0.0389}
+{"bench":"fp4","rows":8,"ms":1.1420,"ms_min":1.1358,"ms_max":1.1510,"flops":7.86432e+08}
+{"bench":"fp4_parts","rows":8,"quant":0.0460,"up":0.7535,"swiglu":0,"down":0.3462}
+{"bench":"fp4","rows":512,"ms":7.3883,"ms_min":7.3688,"ms_max":7.9332,"flops":5.03316e+10}
+{"bench":"fp4_parts","rows":512,"quant":0.2298,"up":4.7583,"swiglu":0,"down":2.4013}
+{"bench":"fp4","rows":2048,"ms":9.4947,"ms_min":9.4587,"ms_max":10.1016,"flops":2.01327e+11}
+{"bench":"fp4_parts","rows":2048,"quant":0.6739,"up":5.6482,"swiglu":0,"down":3.1775}
+{"bench":"fp4","rows":8192,"ms":22.4400,"ms_min":22.4152,"ms_max":23.5840,"flops":8.05306e+11}
+{"bench":"fp4_parts","rows":8192,"quant":2.8170,"up":12.4885,"swiglu":0,"down":7.1424}

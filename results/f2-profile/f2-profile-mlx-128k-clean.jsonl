@@ -1,0 +1,1 @@
+{"label": "f2-profile-mlx-128k-clean", "seed": 201, "base_tokens": 93000, "prompt_tokens": 136814, "ttft_s": 78.52, "prefill_tok_s": 1742.5, "start_utc": "18:40:40", "on_first_token": null}

@@ -1,0 +1,67 @@
+2026-09-29 12:32:41 UTC STEP WINDOW START: stopping tf-serve
+2026-09-29 12:33:13 UTC STEP start mixed pass 1 (/tf/flashnext-nvfp4-mixed)
+2026-09-29 12:39:25 UTC mixed ready: [tensorfold] CUDA rank 0 startup estimate 86.31 GiB within 105.04 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 262144-token prompt/reply window; 262151-token cache; n-gram tables read in 5.1s; 21 decode graphs captured; prompt kernels warmed in 1.0s [tensorfold] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 262144; loaded in 361.6s) 
+2026-09-29 12:39:25 UTC STEP exactness E (mixed pass 1)
+prompt a: identical=True
+prompt b: identical=True
+prompt c: identical=True
+coherent: True | b head: ```python def merge_sorted_lists(list1: list, list2: list) -> list:     """     Merge two sorted lists into a single sorted list.          Args:         list1: 
+2026-09-29 12:39:55 UTC STEP bench_openai mixed-1
+{"label": "", "prompt": "fibonacci-raw", "temperature": 1.0, "decode_tps_median": 73.99618961111179, "decode_tps_all": [83.68, 58.09, 84.86, 71.51, 53.33, 73.7, 86.27, 74.68, 43.96, 74.29], "ttft_s_median": 0.09837842988781631}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 1.0, "decode_tps_median": 58.42522883802307, "decode_tps_all": [64.5, 41.4, 68.48, 59.51, 54.03, 70.15, 50.15, 53.02, 60.17, 57.34], "ttft_s_median": 0.13750003254972398}
+{"label": "", "prompt": "fibonacci-raw", "temperature": 0.0, "decode_tps_median": 55.53224549085313, "decode_tps_all": [55.39, 55.61, 55.45, 55.53, 55.57, 55.61, 55.54, 55.57, 55.47, 55.49], "ttft_s_median": 0.09865834901574999}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 0.0, "decode_tps_median": 83.19045543432898, "decode_tps_all": [83.27, 83.34, 83.1, 83.02, 82.7, 83.23, 83.28, 82.95, 83.32, 83.15], "ttft_s_median": 0.13900042593013495}
+2026-09-29 12:40:44 UTC STEP agent_bench mixed-1
+{"prompt_tokens": 123974, "output_tokens": 547, "ttft_s": 72.13, "decode_tps": 36.1, "total_s": 87.3, "label": "mixed-1", "turn": 0, "kind": "cold"}
+{"prompt_tokens": 133890, "output_tokens": 524, "ttft_s": 10.6, "decode_tps": 45.8, "total_s": 22.04, "label": "mixed-1", "turn": 1, "kind": "follow-up"}
+{"prompt_tokens": 143755, "output_tokens": 524, "ttft_s": 20.53, "decode_tps": 72.3, "total_s": 27.77, "label": "mixed-1", "turn": 2, "kind": "follow-up"}
+{"prompt_tokens": 153606, "output_tokens": 524, "ttft_s": 19.66, "decode_tps": 80.7, "total_s": 26.15, "label": "mixed-1", "turn": 3, "kind": "follow-up"}
+2026-09-29 12:43:30 UTC STEP start mlx pass 1 (/tf/flashnext-mlx-4bit-mtp)
+2026-09-29 12:46:11 UTC mlx ready: [tensorfold] CUDA rank 0 startup estimate 87.49 GiB within 105.12 GiB; native 262144, allocated prompt/reply window 160689, cache slots 160696 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 160689-token prompt/reply window; 160696-token cache; n-gram tables read in 6.6s; 21 decode graphs captured; prompt kernels warmed in 0.9s [tensorfold] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 160689; loaded in 152.4s) 
+2026-09-29 12:46:11 UTC STEP bench_openai mlx-1
+{"label": "", "prompt": "fibonacci-raw", "temperature": 1.0, "decode_tps_median": 78.73096379493813, "decode_tps_all": [70.89, 82.88, 78.61, 79.66, 94.72, 88.23, 76.17, 67.41, 65.62, 78.85], "ttft_s_median": 0.10055923252366483}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 1.0, "decode_tps_median": 62.27789447995954, "decode_tps_all": [61.57, 69.7, 64.49, 64.3, 63.83, 55.49, 61.37, 59.8, 57.26, 62.98], "ttft_s_median": 0.14193703257478774}
+{"label": "", "prompt": "fibonacci-raw", "temperature": 0.0, "decode_tps_median": 74.20006235049799, "decode_tps_all": [73.77, 74.07, 74.14, 74.31, 74.25, 74.22, 74.25, 74.21, 74.19, 74.17], "ttft_s_median": 0.10950612195301801}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 0.0, "decode_tps_median": 72.43106243178946, "decode_tps_all": [72.49, 72.47, 72.38, 72.41, 72.48, 72.42, 72.29, 72.44, 72.41, 72.55], "ttft_s_median": 0.1455645204987377}
+2026-09-29 12:46:55 UTC STEP agent_bench mlx-1
+{"prompt_tokens": 123974, "output_tokens": 574, "ttft_s": 62.51, "decode_tps": 38.5, "total_s": 77.42, "label": "mlx-1", "turn": 0, "kind": "cold"}
+{"prompt_tokens": 133917, "output_tokens": 528, "ttft_s": 10.06, "decode_tps": 39.6, "total_s": 23.41, "label": "mlx-1", "turn": 1, "kind": "follow-up"}
+{"prompt_tokens": 143786, "output_tokens": 528, "ttft_s": 19.6, "decode_tps": 76.6, "total_s": 26.49, "label": "mlx-1", "turn": 2, "kind": "follow-up"}
+{"prompt_tokens": 153641, "output_tokens": 528, "ttft_s": 19.61, "decode_tps": 79.7, "total_s": 26.23, "label": "mlx-1", "turn": 3, "kind": "follow-up"}
+2026-09-29 12:49:32 UTC STEP start mixed pass 2 (/tf/flashnext-nvfp4-mixed)
+2026-09-29 12:55:23 UTC mixed ready: [tensorfold] CUDA rank 0 startup estimate 86.31 GiB within 105.11 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 262144-token prompt/reply window; 262151-token cache; n-gram tables read in 2.8s; 21 decode graphs captured; prompt kernels warmed in 0.9s [tensorfold] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 262144; loaded in 349.7s) 
+2026-09-29 12:55:23 UTC STEP bench_openai mixed-2
+{"label": "", "prompt": "fibonacci-raw", "temperature": 1.0, "decode_tps_median": 78.74072789436148, "decode_tps_all": [83.63, 62.75, 91.57, 76.88, 58.17, 78.98, 91.59, 78.5, 50.99, 79.66], "ttft_s_median": 0.09914859745185822}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 1.0, "decode_tps_median": 63.06151352901266, "decode_tps_all": [64.53, 45.09, 74.23, 67.55, 58.45, 73.57, 54.05, 59.94, 64.82, 61.59], "ttft_s_median": 0.13696219795383513}
+{"label": "", "prompt": "fibonacci-raw", "temperature": 0.0, "decode_tps_median": 55.61366984568847, "decode_tps_all": [55.61, 55.63, 55.62, 55.59, 55.62, 55.58, 55.31, 55.63, 55.61, 55.61], "ttft_s_median": 0.10237353143747896}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 0.0, "decode_tps_median": 83.23018961007118, "decode_tps_all": [83.15, 83.38, 83.41, 83.02, 83.24, 83.24, 83.22, 83.3, 83.06, 83.21], "ttft_s_median": 0.14007484400644898}
+2026-09-29 12:56:10 UTC STEP agent_bench mixed-2
+{"prompt_tokens": 123974, "output_tokens": 547, "ttft_s": 64.59, "decode_tps": 38.7, "total_s": 78.74, "label": "mixed-2", "turn": 0, "kind": "cold"}
+{"prompt_tokens": 133890, "output_tokens": 524, "ttft_s": 10.16, "decode_tps": 48.7, "total_s": 20.91, "label": "mixed-2", "turn": 1, "kind": "follow-up"}
+{"prompt_tokens": 143755, "output_tokens": 524, "ttft_s": 19.62, "decode_tps": 79.2, "total_s": 26.23, "label": "mixed-2", "turn": 2, "kind": "follow-up"}
+{"prompt_tokens": 153606, "output_tokens": 524, "ttft_s": 19.65, "decode_tps": 83.4, "total_s": 25.94, "label": "mixed-2", "turn": 3, "kind": "follow-up"}
+2026-09-29 12:58:42 UTC STEP acc_eval mixed
+{"model": "f1", "gsm8k_acc": 0.976, "gsm8k_n": 250, "humaneval_programs": 164, "transport_errors": 0, "wall_s": 1132}
+2026-09-29 13:17:37 UTC STEP start mlx pass 2 (/tf/flashnext-mlx-4bit-mtp)
+2026-09-29 13:20:08 UTC mlx ready: [tensorfold] CUDA rank 0 startup estimate 87.46 GiB within 105.09 GiB; native 262144, allocated prompt/reply window 160204, cache slots 160211 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 160204-token prompt/reply window; 160211-token cache; n-gram tables read in 2.9s; 21 decode graphs captured; prompt kernels warmed in 0.9s [tensorfold] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 160204; loaded in 148.5s) 
+2026-09-29 13:20:08 UTC STEP bench_openai mlx-2
+{"label": "", "prompt": "fibonacci-raw", "temperature": 1.0, "decode_tps_median": 78.68241029395521, "decode_tps_all": [70.43, 82.4, 78.38, 79.31, 94.13, 87.39, 75.85, 67.06, 65.39, 78.98], "ttft_s_median": 0.10941019863821566}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 1.0, "decode_tps_median": 62.13151314192313, "decode_tps_all": [61.48, 69.42, 64.73, 63.88, 63.78, 55.28, 61.04, 59.92, 57.25, 62.78], "ttft_s_median": 0.14609047048725188}
+{"label": "", "prompt": "fibonacci-raw", "temperature": 0.0, "decode_tps_median": 74.21928704018896, "decode_tps_all": [74.11, 74.26, 74.19, 74.24, 74.29, 74.25, 74.13, 74.15, 74.13, 74.29], "ttft_s_median": 0.1005517200101167}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 0.0, "decode_tps_median": 72.21599007164019, "decode_tps_all": [72.19, 72.27, 72.21, 72.09, 72.11, 72.32, 72.22, 72.16, 72.34, 72.37], "ttft_s_median": 0.13660956302192062}
+2026-09-29 13:20:53 UTC STEP agent_bench mlx-2
+{"prompt_tokens": 123974, "output_tokens": 574, "ttft_s": 62.51, "decode_tps": 38.5, "total_s": 77.43, "label": "mlx-2", "turn": 0, "kind": "cold"}
+{"prompt_tokens": 133917, "output_tokens": 528, "ttft_s": 10.06, "decode_tps": 39.5, "total_s": 23.41, "label": "mlx-2", "turn": 1, "kind": "follow-up"}
+{"prompt_tokens": 143786, "output_tokens": 528, "ttft_s": 19.56, "decode_tps": 76.5, "total_s": 26.46, "label": "mlx-2", "turn": 2, "kind": "follow-up"}
+{"prompt_tokens": 153641, "output_tokens": 528, "ttft_s": 19.65, "decode_tps": 79.6, "total_s": 26.28, "label": "mlx-2", "turn": 3, "kind": "follow-up"}
+2026-09-29 13:23:27 UTC STEP acc_eval mlx
+{"model": "f1", "gsm8k_acc": 0.976, "gsm8k_n": 250, "humaneval_programs": 164, "transport_errors": 0, "wall_s": 1199}
+2026-09-29 13:43:25 UTC STEP ALL STEPS DONE
+2026-09-29 13:43:25 UTC RESTORE: removing oj-f1, starting tf-serve
+2026-09-29 13:46:09 UTC RESTORE: tf-serve healthy
+2026-09-29 13:46:09 UTC WINDOW END (elapsed 73 min)
+2026-09-29 13:46:09 UTC HumanEval execution for mixed (no GPU)
+2026-09-29 13:46:11 UTC run_humaneval mixed rc=0
+2026-09-29 13:46:11 UTC HumanEval execution for mlx (no GPU)
+2026-09-29 13:46:14 UTC run_humaneval mlx rc=0
+2026-09-29 13:46:14 UTC HUMANEVAL DONE

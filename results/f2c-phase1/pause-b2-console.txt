@@ -1,0 +1,56 @@
+dry-run arm=clean rep=2 draft=on fields=- timing_file=-
+dry-run arm=profile rep=2 draft=on fields=profile,timing timing_file=~/octojet-runs/f2c-phase1/f2c-phase1-S3-128k.jsonl-profile-2-timing.json
+dry-run arm=clean rep=1 draft=on fields=- timing_file=-
+dry-run arm=clean rep=1 draft=on fields=- timing_file=-
+dry-run arm=clean rep=2 draft=on fields=- timing_file=-
+dry-run arm=timing rep=1 draft=on fields=timing timing_file=~/octojet-runs/f2c-phase1/f2c-phase1-S4-128k.jsonl-timing-1-timing.json
+dry-run arm=clean rep=1 draft=off fields=draft timing_file=-
+dry-run arm=clean rep=2 draft=off fields=draft timing_file=-
+dry-run arm=clean rep=1 draft=on fields=- timing_file=-
+dry-run arm=clean rep=2 draft=on fields=- timing_file=-
+dry-run arm=clean rep=1 draft=on fields=- timing_file=-
+2026-09-30T12:39:32Z dry-run OK: every planned request parses and no artifact collides
+2026-09-30T12:39:32Z PAUSE B START: stopping oj-serve and the 27B
+2026-09-30T12:39:35Z S3: page cache dropped
+               total        used        free      shared  buff/cache   available
+Mem:             121           3         118           0           0         117
+Swap:             15           1          14
+2026-09-30T12:39:35Z S3: process start
+2026-09-30T12:40:43Z S3: healthy after 68s
+[tensorfold] CUDA rank 0 startup estimate 80.16 GiB within 104.15 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151
+[tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 2 streams of 262144 prompt/reply tokens (4799 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 6.9s; 0 decode graphs captured; prompt kernels warmed in 6.0s
+2026-09-30T12:40:43Z S3: selector warm-up (140k)
+{"label": "S3-warmup", "arm": "clean", "rep": 2, "untimed": false, "draft": true, "prompt_tokens": 140000, "prompt_sha_ok": true, "ttft_s": 87.65481695602648, "received_at": 1596840.18661118, "queued_at": 1596840.187941565, "admitted_at": 1596840.188083661, "first_token_at": 1596927.841428136, "client_send_at": 1596840.161462022, "client_first_sse_at": 1596927.84391553, "client_wall_s": 87.73076208308339, "cached": 0, "profiler_rc": null, "notes": null, "timing_file": null, "usage": {"prompt_tokens": 140000, "completion_tokens": 2, "total_tokens": 140002}}
+{"label": "S3-128k", "arm": "profile", "rep": 2, "untimed": false, "draft": true, "prompt_tokens": 128000, "prompt_sha_ok": true, "ttft_s": 71.27543812198564, "received_at": 1596927.997716509, "queued_at": 1596927.998546702, "admitted_at": 1596927.998845166, "first_token_at": 1596999.273154631, "client_send_at": 1596927.972160709, "client_first_sse_at": 1597006.24048867, "client_wall_s": 78.69113656785339, "cached": 0, "profiler_rc": [0, 0], "notes": null, "timing_file": "~/octojet-runs/f2c-phase1/f2c-phase1-S3-128k.jsonl-profile-2-timing.json", "usage": {"prompt_tokens": 128000, "completion_tokens": 2, "total_tokens": 128002}}
+VmHWM:	  225464 kB
+VmRSS:	  190756 kB
+2026-09-30T12:43:32Z S3: stopped
+2026-09-30T12:43:42Z f2c-128k: report written (34914887 bytes, nsys Generated line seen); nsys stats / export / reduction run after production is restored
+2026-09-30T12:43:43Z S4: page cache dropped
+               total        used        free      shared  buff/cache   available
+Mem:             121           3         118           0           0         117
+Swap:             15           1          14
+2026-09-30T12:43:43Z S4: process start
+2026-09-30T12:46:23Z S4: healthy after 160s
+[tensorfold] CUDA rank 0 startup estimate 87.19 GiB within 105.09 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151
+[tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 2 streams of 262144 prompt/reply tokens (4799 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 9.6s; 0 decode graphs captured; prompt kernels warmed in 3.6s
+2026-09-30T12:46:23Z S4: selector warm-up (140k)
+{"label": "S4-warmup", "arm": "clean", "rep": 1, "untimed": false, "draft": true, "prompt_tokens": 140000, "prompt_sha_ok": true, "ttft_s": 111.03953863214701, "received_at": 1597179.948261459, "queued_at": 1597179.950311157, "admitted_at": 1597179.950806614, "first_token_at": 1597290.987800091, "client_send_at": 1597179.907815669, "client_first_sse_at": 1597290.992750625, "client_wall_s": 111.14026742102578, "cached": 0, "profiler_rc": null, "notes": null, "timing_file": null, "usage": {"prompt_tokens": 140000, "completion_tokens": 2, "total_tokens": 140002}}
+{"label": "S4-128k", "arm": "clean", "rep": 1, "untimed": false, "draft": true, "prompt_tokens": 128000, "prompt_sha_ok": true, "ttft_s": 67.70625342079438, "received_at": 1597291.134608233, "queued_at": 1597291.136047578, "admitted_at": 1597291.136204651, "first_token_at": 1597358.840861654, "client_send_at": 1597291.100965329, "client_first_sse_at": 1597358.841536279, "client_wall_s": 67.80027817399241, "cached": 0, "profiler_rc": null, "notes": null, "timing_file": null, "usage": {"prompt_tokens": 128000, "completion_tokens": 2, "total_tokens": 128002}}
+{"label": "S4-128k", "arm": "clean", "rep": 2, "untimed": false, "draft": true, "prompt_tokens": 128000, "prompt_sha_ok": true, "ttft_s": 68.33984663896263, "received_at": 1597358.927305774, "queued_at": 1597358.9283224, "admitted_at": 1597358.928466176, "first_token_at": 1597427.267152413, "client_send_at": 1597358.906085509, "client_first_sse_at": 1597427.268448894, "client_wall_s": 68.41780447796918, "cached": 0, "profiler_rc": null, "notes": null, "timing_file": null, "usage": {"prompt_tokens": 128000, "completion_tokens": 2, "total_tokens": 128002}}
+{"label": "S4-128k", "arm": "timing", "rep": 1, "untimed": false, "draft": true, "prompt_tokens": 128000, "prompt_sha_ok": true, "ttft_s": 67.91661161580123, "received_at": 1597427.349326098, "queued_at": 1597427.350333539, "admitted_at": 1597427.3504757, "first_token_at": 1597495.265937714, "client_send_at": 1597427.328822537, "client_first_sse_at": 1597495.26705202, "client_wall_s": 68.32151550194249, "cached": 0, "profiler_rc": null, "notes": null, "timing_file": "~/octojet-runs/f2c-phase1/f2c-phase1-S4-128k.jsonl-timing-1-timing.json", "usage": {"prompt_tokens": 128000, "completion_tokens": 2, "total_tokens": 128002}}
+{"label": "S4-128k-nd", "arm": "clean", "rep": 1, "untimed": false, "draft": false, "prompt_tokens": 128000, "prompt_sha_ok": true, "ttft_s": 65.24716089013964, "received_at": 1597495.741876762, "queued_at": 1597495.742468459, "admitted_at": 1597495.742600731, "first_token_at": 1597560.989037652, "client_send_at": 1597495.717066747, "client_first_sse_at": 1597560.989742293, "client_wall_s": 65.32723467214964, "cached": 0, "profiler_rc": null, "notes": null, "timing_file": null, "usage": {"prompt_tokens": 128000, "completion_tokens": 2, "total_tokens": 128002}}
+{"label": "S4-128k-nd", "arm": "clean", "rep": 2, "untimed": false, "draft": false, "prompt_tokens": 128000, "prompt_sha_ok": true, "ttft_s": 65.2437691539526, "received_at": 1597561.070900237, "queued_at": 1597561.071893854, "admitted_at": 1597561.07203883, "first_token_at": 1597626.314669391, "client_send_at": 1597561.049192913, "client_first_sse_at": 1597626.317056002, "client_wall_s": 65.31459130882286, "cached": 0, "profiler_rc": null, "notes": null, "timing_file": null, "usage": {"prompt_tokens": 128000, "completion_tokens": 2, "total_tokens": 128002}}
+{"label": "S4-32k", "arm": "clean", "rep": 1, "untimed": false, "draft": true, "prompt_tokens": 32000, "prompt_sha_ok": true, "ttft_s": 15.201192910084501, "received_at": 1597626.435393547, "queued_at": 1597626.435736395, "admitted_at": 1597626.435865675, "first_token_at": 1597641.636586457, "client_send_at": 1597626.416153762, "client_first_sse_at": 1597641.63728321, "client_wall_s": 15.258864681003615, "cached": 0, "profiler_rc": null, "notes": null, "timing_file": null, "usage": {"prompt_tokens": 32000, "completion_tokens": 2, "total_tokens": 32002}}
+{"label": "S4-32k", "arm": "clean", "rep": 2, "untimed": false, "draft": true, "prompt_tokens": 32000, "prompt_sha_ok": true, "ttft_s": 15.185670477105305, "received_at": 1597641.682217764, "queued_at": 1597641.682546644, "admitted_at": 1597641.68257154, "first_token_at": 1597656.867888241, "client_send_at": 1597641.676253708, "client_first_sse_at": 1597656.869076995, "client_wall_s": 15.229630790883675, "cached": 0, "profiler_rc": null, "notes": null, "timing_file": null, "usage": {"prompt_tokens": 32000, "completion_tokens": 2, "total_tokens": 32002}}
+{"label": "S4-210k", "arm": "clean", "rep": 1, "untimed": false, "draft": true, "prompt_tokens": 210000, "prompt_sha_ok": true, "ttft_s": 231.38558730809018, "received_at": 1597657.029221651, "queued_at": 1597657.031502454, "admitted_at": 1597657.031656358, "first_token_at": 1597888.414808959, "client_send_at": 1597656.984971689, "client_first_sse_at": 1597888.435494315, "client_wall_s": 231.60308697400615, "cached": 0, "profiler_rc": null, "notes": null, "timing_file": null, "usage": {"prompt_tokens": 210000, "completion_tokens": 2, "total_tokens": 210002}}
+VmHWM:	53014716 kB
+VmRSS:	53014716 kB
+2026-09-30T12:58:23Z S4: stopped
+2026-09-30T12:58:23Z RESTORE (exit 0): starting oj-serve and the 27B
+2026-09-30T12:59:18Z PRODUCTION RESTORED
+~/tensorfold/octojet-profiles/f2c-128k-kern.csv: 58 kernel rows; columns ['Generating SQLite file /tf/octojet-profiles/f2c-128k.sqlite from /tf/octojet-profiles/f2c-128k.nsys-rep']
+2026-09-30T12:59:25Z f2c-128k: no kernel rows in the report
+2026-09-30T12:59:25Z S3: REDUCTION INVALID
+2026-09-30T12:59:25Z PAUSE B: the nsys capture was INVALID (marker file in ~/octojet-runs/f2c-phase1); the results task must not use it
+PAUSE_B2_EXIT=1

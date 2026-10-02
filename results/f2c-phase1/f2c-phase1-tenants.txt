@@ -1,0 +1,4 @@
+pid, process_name, used_gpu_memory [MiB]
+2964065, python, 86821 MiB
+3026696, python, 2134 MiB
+llm-research-spark-1790747779-3026648 Up 48 minutes

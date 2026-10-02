@@ -1,0 +1,38 @@
+2026-09-29 14:46:14 UTC STEP WINDOW START: stopping tf-serve
+2026-09-29 14:46:20 UTC STEP start mixed single-stream (/tf/flashnext-nvfp4-mixed)
+2026-09-29 14:52:22 UTC mixed ready: [tensorfold] CUDA rank 0 startup estimate 86.31 GiB within 104.71 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 262144-token prompt/reply window; 262151-token cache; n-gram tables read in 5.7s; 21 decode graphs captured; prompt kernels warmed in 0.9s [tensorfold] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 262144; loaded in 355.2s) 
+2026-09-29 14:52:22 UTC STEP agent_bench mixed-210k (single stream)
+Traceback (most recent call last):
+  File "~/octojet/bench/agent_bench.py", line 71, in <module>
+    main()
+  File "~/octojet/bench/agent_bench.py", line 63, in main
+    reply, m = stream(a.base, a.model, msgs, 700)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "~/octojet/bench/agent_bench.py", line 32, in stream
+    with urllib.request.urlopen(req, timeout=1800) as r:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 521, in open
+    response = meth(req, response)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 630, in http_response
+    response = self.parent.error(
+               ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 559, in error
+    return self._call_chain(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 639, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+2026-09-29 14:52:22 UTC agent_bench 210k rc=1
+2026-09-29 14:52:22 UTC skipping 240k (210k failed)
+2026-09-29 14:52:24 UTC STEP stop mixed
+2026-09-29 14:52:24 UTC STEP ALL STEPS DONE
+2026-09-29 14:52:24 UTC RESTORE: removing oj-f1, starting tf-serve
+2026-09-29 14:54:54 UTC RESTORE: tf-serve healthy
+2026-09-29 14:54:54 UTC WINDOW END (elapsed 8 min)

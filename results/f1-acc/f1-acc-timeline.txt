@@ -1,0 +1,14 @@
+2026-09-29 14:19:33 UTC WINDOW START: stopping tf-serve
+2026-09-29 14:19:36 UTC start mixed --parallel 4 (/tf/flashnext-nvfp4-mixed)
+2026-09-29 14:25:57 UTC concurrent_equal mixed --prompts 4
+2026-09-29 14:26:32 UTC concurrent_equal mixed --prompts 8
+2026-09-29 14:27:28 UTC agent_bench mixed-210k
+2026-09-29 14:27:29 UTC bench_openai mixed --no-draft
+2026-09-29 14:28:50 UTC bench_openai mixed (drafting on)
+2026-09-29 14:29:42 UTC stop mixed
+2026-09-29 14:29:42 UTC start mlx --parallel 4 (/tf/flashnext-mlx-4bit-mtp)
+2026-09-29 14:32:23 UTC concurrent_equal mlx --prompts 4
+2026-09-29 14:32:58 UTC bench_openai mlx --no-draft
+2026-09-29 14:34:18 UTC bench_openai mlx (drafting on)
+2026-09-29 14:35:07 UTC stop mlx
+2026-09-29 14:35:07 UTC ALL STEPS DONE

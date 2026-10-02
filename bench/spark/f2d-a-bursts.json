@@ -1,0 +1,142 @@
+[
+ {
+  "label": "b1-cold",
+  "manifest": "__M__/cP.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "none",
+  "expect_cached": 0,
+  "expect_reply_equal": null
+ },
+ {
+  "label": "b1-exact1",
+  "manifest": "__M__/cP.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "exact",
+  "expect_cached": 71444,
+  "expect_reply_equal": "b1-cold"
+ },
+ {
+  "label": "b1-exact2",
+  "manifest": "__M__/cP.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "exact",
+  "expect_cached": 71444,
+  "expect_reply_equal": "b1-cold"
+ },
+ {
+  "label": "b1-exact3",
+  "manifest": "__M__/cP.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "exact",
+  "expect_cached": 71444,
+  "expect_reply_equal": "b1-cold"
+ },
+ {
+  "label": "b1-exact4",
+  "manifest": "__M__/cP.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "exact",
+  "expect_cached": 71444,
+  "expect_reply_equal": "b1-cold"
+ },
+ {
+  "label": "b1-variant",
+  "manifest": "__M__/cPp.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "none",
+  "expect_cached": 0,
+  "expect_reply_equal": null
+ },
+ {
+  "label": "b2-extend",
+  "manifest": "__M__/cP2.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "extend",
+  "expect_cached": 71444,
+  "expect_reply_equal": null
+ },
+ {
+  "label": "b2-exact1",
+  "manifest": "__M__/cP2.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "exact",
+  "expect_cached": 73492,
+  "expect_reply_equal": "b2-extend"
+ },
+ {
+  "label": "b2-exact2",
+  "manifest": "__M__/cP2.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "exact",
+  "expect_cached": 73492,
+  "expect_reply_equal": "b2-extend"
+ },
+ {
+  "label": "b2-exact3",
+  "manifest": "__M__/cP2.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "exact",
+  "expect_cached": 73492,
+  "expect_reply_equal": "b2-extend"
+ },
+ {
+  "label": "b2-exact4",
+  "manifest": "__M__/cP2.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "exact",
+  "expect_cached": 73492,
+  "expect_reply_equal": "b2-extend"
+ },
+ {
+  "label": "b2-variant",
+  "manifest": "__M__/cP2p.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "none",
+  "expect_cached": 0,
+  "expect_reply_equal": null
+ },
+ {
+  "label": "b3-extend",
+  "manifest": "__M__/cP3.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "extend",
+  "expect_cached": 73492,
+  "expect_reply_equal": null
+ },
+ {
+  "label": "b3-exact1",
+  "manifest": "__M__/cP3.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 2,
+  "expect_reuse": "exact",
+  "expect_cached": 75540,
+  "expect_reply_equal": "b3-extend"
+ }
+]

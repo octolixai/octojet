@@ -1,0 +1,86 @@
+[
+ {
+  "label": "",
+  "prompt": "fibonacci-raw",
+  "temperature": 1.0,
+  "tokens": 64,
+  "decode_tps_median": 73.99618961111179,
+  "decode_tps_all": [
+   83.68,
+   58.09,
+   84.86,
+   71.51,
+   53.33,
+   73.7,
+   86.27,
+   74.68,
+   43.96,
+   74.29
+  ],
+  "ttft_s_median": 0.09837842988781631,
+  "sample": "\n\n<think>\n\n</think>\n\n# Fibonacci Sequence in Python\n\n## What is the Fibonacci Sequence?\n\nThe Fibonacci sequence is a series of numbers where each number is the "
+ },
+ {
+  "label": "",
+  "prompt": "gpu-chat-no-think",
+  "temperature": 1.0,
+  "tokens": 64,
+  "decode_tps_median": 58.42522883802307,
+  "decode_tps_all": [
+   64.5,
+   41.4,
+   68.48,
+   59.51,
+   54.03,
+   70.15,
+   50.15,
+   53.02,
+   60.17,
+   57.34
+  ],
+  "ttft_s_median": 0.13750003254972398,
+  "sample": "### Part 1: How Matrix Multiplication Uses a GPU (Plain English)\n\nTo understand how a GPU helps with matrix multiplication, we first need to look at how a stand"
+ },
+ {
+  "label": "",
+  "prompt": "fibonacci-raw",
+  "temperature": 0.0,
+  "tokens": 64,
+  "decode_tps_median": 55.53224549085313,
+  "decode_tps_all": [
+   55.39,
+   55.61,
+   55.45,
+   55.53,
+   55.57,
+   55.61,
+   55.54,
+   55.57,
+   55.47,
+   55.49
+  ],
+  "ttft_s_median": 0.09865834901574999,
+  "sample": "\n\n<think>\nThe user wants a short Python function for computing the Fibonacci sequence, along with an explanation. Let me think about what makes a good response "
+ },
+ {
+  "label": "",
+  "prompt": "gpu-chat-no-think",
+  "temperature": 0.0,
+  "tokens": 64,
+  "decode_tps_median": 83.19045543432898,
+  "decode_tps_all": [
+   83.27,
+   83.34,
+   83.1,
+   83.02,
+   82.7,
+   83.23,
+   83.28,
+   82.95,
+   83.32,
+   83.15
+  ],
+  "ttft_s_median": 0.13900042593013495,
+  "sample": "### How Matrix Multiplication Uses a GPU (In Plain English)\n\nTo understand how a GPU (Graphics Processing Unit) handles matrix multiplication, you first need to"
+ }
+]

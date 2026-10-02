@@ -1,0 +1,183 @@
+2026-09-29 14:19:33 UTC STEP WINDOW START: stopping tf-serve
+2026-09-29 14:19:36 UTC STEP start mixed --parallel 4 (/tf/flashnext-nvfp4-mixed)
+2026-09-29 14:25:57 UTC mixed ready: [tensorfold] CUDA rank 0 startup estimate 87.42 GiB within 105.05 GiB; native 262144, allocated prompt/reply window 135367, cache slots 135374 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 4 streams of 135367 prompt/reply tokens (4198 MiB a stream), eager; n-gram tables read in 19.3s; 0 decode graphs captured; prompt kernels warmed in 4.3s [tensorfold] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 135367; loaded in 372.1s) 
+2026-09-29 14:25:57 UTC STEP concurrent_equal mixed --prompts 4
+{
+ "prompts": [
+  {
+   "solo_len_chars": 861,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 811,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 861,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 898,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  }
+ ],
+ "all_equal": true,
+ "wall_solo_s": 16.68,
+ "wall_concurrent_s": 9.91
+}
+2026-09-29 14:26:32 UTC concurrent_equal mixed x4 rc=0
+2026-09-29 14:26:32 UTC STEP concurrent_equal mixed --prompts 8
+{
+ "prompts": [
+  {
+   "solo_len_chars": 861,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 811,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 861,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 898,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 845,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 858,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 880,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 822,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  }
+ ],
+ "all_equal": true,
+ "wall_solo_s": 26.95,
+ "wall_concurrent_s": 14.91
+}
+2026-09-29 14:27:28 UTC concurrent_equal mixed x8 rc=0
+2026-09-29 14:27:28 UTC STEP agent_bench mixed-210k
+Traceback (most recent call last):
+  File "~/octojet/bench/agent_bench.py", line 71, in <module>
+    main()
+  File "~/octojet/bench/agent_bench.py", line 63, in main
+    reply, m = stream(a.base, a.model, msgs, 700)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "~/octojet/bench/agent_bench.py", line 32, in stream
+    with urllib.request.urlopen(req, timeout=1800) as r:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 521, in open
+    response = meth(req, response)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 630, in http_response
+    response = self.parent.error(
+               ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 559, in error
+    return self._call_chain(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 639, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+2026-09-29 14:27:29 UTC NOTE: agent_bench mixed-210k failed (output saved)
+2026-09-29 14:27:29 UTC STEP bench_openai mixed --no-draft
+{"label": "", "prompt": "fibonacci-raw", "temperature": 1.0, "decode_tps_median": 36.169629024619994, "decode_tps_all": [38.91, 32.78, 34.45, 35.45, 31.68, 36.89, 37.43, 38.42, 32.21, 37.68], "ttft_s_median": 0.09587173000909388}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 1.0, "decode_tps_median": 34.27402228460218, "decode_tps_all": [38.7, 30.56, 35.18, 33.4, 33.72, 34.98, 34.5, 34.04, 33.35, 36.57], "ttft_s_median": 0.12830349046271294}
+{"label": "", "prompt": "fibonacci-raw", "temperature": 0.0, "decode_tps_median": 38.95857814431568, "decode_tps_all": [39.01, 38.87, 38.99, 38.99, 38.89, 39.05, 38.88, 38.94, 38.87, 38.98], "ttft_s_median": 0.0953694130294025}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 0.0, "decode_tps_median": 38.87597328691772, "decode_tps_all": [38.93, 38.84, 38.93, 38.84, 38.9, 38.83, 38.93, 38.85, 38.9, 38.7], "ttft_s_median": 0.12766624242067337}
+2026-09-29 14:28:50 UTC STEP bench_openai mixed (drafting on)
+{"label": "", "prompt": "fibonacci-raw", "temperature": 1.0, "decode_tps_median": 72.49913141574308, "decode_tps_all": [82.4, 55.36, 84.38, 69.28, 51.48, 73.94, 86.23, 72.36, 43.7, 72.63], "ttft_s_median": 0.10257792240008712}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 1.0, "decode_tps_median": 57.524593807417546, "decode_tps_all": [63.27, 39.14, 67.96, 62.16, 51.6, 69.57, 47.97, 53.73, 57.33, 57.72], "ttft_s_median": 0.13993466005194932}
+{"label": "", "prompt": "fibonacci-raw", "temperature": 0.0, "decode_tps_median": 54.45819101895954, "decode_tps_all": [54.64, 54.59, 54.46, 54.53, 54.33, 54.36, 54.38, 54.3, 54.46, 54.59], "ttft_s_median": 0.10583200748078525}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 0.0, "decode_tps_median": 81.98281393924307, "decode_tps_all": [82.03, 81.83, 82.14, 81.94, 81.83, 81.93, 81.84, 82.05, 82.12, 82.27], "ttft_s_median": 0.1396446555154398}
+2026-09-29 14:29:42 UTC STEP stop mixed
+2026-09-29 14:29:42 UTC STEP start mlx --parallel 4 (/tf/flashnext-mlx-4bit-mtp)
+2026-09-29 14:32:23 UTC mlx ready: [tensorfold] CUDA rank 0 startup estimate 87.49 GiB within 105.13 GiB; native 262144, allocated prompt/reply window 74856, cache slots 74863 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 4 streams of 74856 prompt/reply tokens (2421 MiB a stream), eager; n-gram tables read in 15.2s; 0 decode graphs captured; prompt kernels warmed in 5.7s [tensorfold] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 74856; loaded in 155.3s) 
+2026-09-29 14:32:23 UTC STEP concurrent_equal mlx --prompts 4
+{
+ "prompts": [
+  {
+   "solo_len_chars": 842,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 875,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 847,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 902,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  }
+ ],
+ "all_equal": true,
+ "wall_solo_s": 16.75,
+ "wall_concurrent_s": 10.41
+}
+2026-09-29 14:32:58 UTC concurrent_equal mlx x4 rc=0
+2026-09-29 14:32:58 UTC STEP bench_openai mlx --no-draft
+{"label": "", "prompt": "fibonacci-raw", "temperature": 1.0, "decode_tps_median": 35.952223893394034, "decode_tps_all": [39.31, 34.68, 35.93, 35.78, 36.12, 36.03, 35.29, 35.98, 33.32, 36.16], "ttft_s_median": 0.0975833215052262}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 1.0, "decode_tps_median": 34.7277182097646, "decode_tps_all": [38.98, 32.95, 35.7, 33.99, 34.14, 34.32, 36.42, 35.13, 32.76, 37.5], "ttft_s_median": 0.13365403143689036}
+{"label": "", "prompt": "fibonacci-raw", "temperature": 0.0, "decode_tps_median": 39.35253745256695, "decode_tps_all": [39.32, 39.33, 39.39, 39.42, 39.3, 39.43, 39.2, 39.33, 39.42, 39.38], "ttft_s_median": 0.09753447852563113}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 0.0, "decode_tps_median": 39.20932475016576, "decode_tps_all": [39.16, 39.15, 39.33, 39.32, 39.29, 39.14, 39.13, 39.26, 39.1, 39.32], "ttft_s_median": 0.1324672260088846}
+2026-09-29 14:34:18 UTC STEP bench_openai mlx (drafting on)
+{"label": "", "prompt": "fibonacci-raw", "temperature": 1.0, "decode_tps_median": 73.29598224564558, "decode_tps_all": [69.32, 78.62, 75.68, 74.0, 87.36, 77.78, 71.46, 60.72, 58.1, 72.59], "ttft_s_median": 0.10528082901146263}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 1.0, "decode_tps_median": 57.27550477731785, "decode_tps_all": [60.49, 63.37, 59.31, 57.79, 56.76, 50.34, 54.49, 53.2, 52.14, 58.81], "ttft_s_median": 0.14574762049596757}
+{"label": "", "prompt": "fibonacci-raw", "temperature": 0.0, "decode_tps_median": 72.70787551272986, "decode_tps_all": [72.51, 72.75, 72.67, 72.86, 72.42, 72.8, 72.87, 72.58, 72.82, 72.42], "ttft_s_median": 0.10452549846377224}
+{"label": "", "prompt": "gpu-chat-no-think", "temperature": 0.0, "decode_tps_median": 71.3619728216409, "decode_tps_all": [71.4, 71.13, 71.38, 71.36, 71.28, 71.26, 71.37, 71.43, 71.43, 71.02], "ttft_s_median": 0.14462295989505947}
+2026-09-29 14:35:07 UTC STEP stop mlx
+2026-09-29 14:35:07 UTC STEP ALL STEPS DONE
+2026-09-29 14:35:07 UTC RESTORE: removing oj-f1, starting tf-serve
+2026-09-29 14:37:48 UTC RESTORE: tf-serve healthy
+2026-09-29 14:37:48 UTC WINDOW END (elapsed 18 min)

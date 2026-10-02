@@ -1,0 +1,8 @@
+Cuda compilation tools, release 13.3, V13.3.73
+Build cuda_13.3.r13.3/compiler.38244171_0
+NVIDIA GB10, 580.173.02
+2ec1ca1
+arch flags: -gencode arch=compute_121a,code=sm_121a; ARCH in env: <unset>
+OJ_FP4: builds
+OJ_FP8: builds
+OJ_COND: builds

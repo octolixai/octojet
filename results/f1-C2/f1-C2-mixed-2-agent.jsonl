@@ -1,0 +1,4 @@
+{"prompt_tokens": 123974, "output_tokens": 547, "ttft_s": 64.59, "decode_tps": 38.7, "total_s": 78.74, "label": "mixed-2", "turn": 0, "kind": "cold"}
+{"prompt_tokens": 133890, "output_tokens": 524, "ttft_s": 10.16, "decode_tps": 48.7, "total_s": 20.91, "label": "mixed-2", "turn": 1, "kind": "follow-up"}
+{"prompt_tokens": 143755, "output_tokens": 524, "ttft_s": 19.62, "decode_tps": 79.2, "total_s": 26.23, "label": "mixed-2", "turn": 2, "kind": "follow-up"}
+{"prompt_tokens": 153606, "output_tokens": 524, "ttft_s": 19.65, "decode_tps": 83.4, "total_s": 25.94, "label": "mixed-2", "turn": 3, "kind": "follow-up"}

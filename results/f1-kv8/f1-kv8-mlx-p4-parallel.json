@@ -1,0 +1,31 @@
+{
+ "prompts": [
+  {
+   "solo_len_chars": 842,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 807,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 857,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 862,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  }
+ ],
+ "all_equal": true,
+ "wall_solo_s": 15.09,
+ "wall_concurrent_s": 9.96
+}

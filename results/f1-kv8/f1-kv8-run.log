@@ -1,0 +1,193 @@
+2026-09-29 15:00:58 UTC STEP WINDOW START: stopping tf-serve
+2026-09-29 15:01:03 UTC STEP start mixed --kv-dtype int8 --parallel 2 (/tf/flashnext-nvfp4-mixed)
+2026-09-29 15:07:05 UTC mixed p2 ready: [tensorfold] CUDA rank 0 startup estimate 80.16 GiB within 105.04 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 2 streams of 262144 prompt/reply tokens (4799 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 3.9s; 0 decode graphs captured; prompt kernels warmed in 2.9s 
+2026-09-29 15:07:05 UTC STEP concurrent_equal mixed --prompts 2
+{
+ "prompts": [
+  {
+   "solo_len_chars": 847,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 865,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  }
+ ],
+ "all_equal": true,
+ "wall_solo_s": 5.63,
+ "wall_concurrent_s": 4.22
+}
+2026-09-29 15:07:19 UTC concurrent_equal mixed p2 rc=0
+2026-09-29 15:07:19 UTC STEP agent_bench mixed-209k (--base-tokens 152000)
+{"prompt_tokens": 210129, "output_tokens": 585, "ttft_s": 226.79, "decode_tps": 40.0, "total_s": 241.42, "label": "mixed-209k", "turn": 0, "kind": "cold"}
+{"prompt_tokens": 220083, "output_tokens": 525, "ttft_s": 20.65, "decode_tps": 45.2, "total_s": 32.27, "label": "mixed-209k", "turn": 1, "kind": "follow-up"}
+2026-09-29 15:11:53 UTC agent_bench mixed-209k rc=0
+2026-09-29 15:11:53 UTC STEP agent_bench mixed-249k (--base-tokens 181000)
+{"prompt_tokens": 250533, "output_tokens": 555, "ttft_s": 310.39, "decode_tps": 39.9, "total_s": 324.28, "label": "mixed-249k", "turn": 0, "kind": "cold"}
+{"prompt_tokens": 260457, "output_tokens": 477, "ttft_s": 21.06, "decode_tps": 48.8, "total_s": 30.82, "label": "mixed-249k", "turn": 1, "kind": "follow-up"}
+2026-09-29 15:17:48 UTC agent_bench mixed-249k rc=0
+2026-09-29 15:17:50 UTC STEP stop mixed p2
+2026-09-29 15:17:50 UTC STEP start mixed --kv-dtype int8 --parallel 3 (/tf/flashnext-nvfp4-mixed)
+2026-09-29 15:23:51 UTC mixed p3 ready: [tensorfold] CUDA rank 0 startup estimate 84.98 GiB within 105.01 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 3 streams of 262144 prompt/reply tokens (4799 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 3.6s; 0 decode graphs captured; prompt kernels warmed in 4.3s 
+2026-09-29 15:23:51 UTC STEP concurrent_equal mixed --prompts 3
+{
+ "prompts": [
+  {
+   "solo_len_chars": 847,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 865,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 863,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  }
+ ],
+ "all_equal": true,
+ "wall_solo_s": 9.5,
+ "wall_concurrent_s": 7.59
+}
+2026-09-29 15:24:14 UTC concurrent_equal mixed p3 rc=0
+2026-09-29 15:24:16 UTC STEP stop mixed p3
+2026-09-29 15:24:16 UTC STEP start mixed --kv-dtype int8 --parallel 4 (/tf/flashnext-nvfp4-mixed)
+2026-09-29 15:30:27 UTC mixed p4 ready: [tensorfold] CUDA rank 0 startup estimate 87.45 GiB within 105.08 GiB; native 262144, allocated prompt/reply window 227687, cache slots 227694 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 4 streams of 227687 prompt/reply tokens (4198 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 7.9s; 0 decode graphs captured; prompt kernels warmed in 6.0s 
+2026-09-29 15:30:27 UTC STEP concurrent_equal mixed --prompts 4
+{
+ "prompts": [
+  {
+   "solo_len_chars": 847,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 865,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 863,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 884,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  }
+ ],
+ "all_equal": true,
+ "wall_solo_s": 15.18,
+ "wall_concurrent_s": 9.65
+}
+2026-09-29 15:30:59 UTC concurrent_equal mixed p4 rc=0
+2026-09-29 15:31:01 UTC STEP stop mixed p4
+2026-09-29 15:31:01 UTC STEP start mlx --kv-dtype int8 --parallel 2 (/tf/flashnext-mlx-4bit-mtp)
+2026-09-29 15:33:52 UTC mlx p2 ready: [tensorfold] CUDA rank 0 startup estimate 87.19 GiB within 105.12 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 2 streams of 262144 prompt/reply tokens (4799 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 9.8s; 0 decode graphs captured; prompt kernels warmed in 6.0s 
+2026-09-29 15:33:52 UTC STEP concurrent_equal mlx --prompts 2
+{
+ "prompts": [
+  {
+   "solo_len_chars": 842,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 807,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  }
+ ],
+ "all_equal": true,
+ "wall_solo_s": 6.93,
+ "wall_concurrent_s": 4.72
+}
+2026-09-29 15:34:09 UTC concurrent_equal mlx p2 rc=0
+2026-09-29 15:34:11 UTC STEP stop mlx p2
+2026-09-29 15:34:11 UTC STEP start mlx --kv-dtype int8 --parallel 3 (/tf/flashnext-mlx-4bit-mtp)
+2026-09-29 15:37:02 UTC mlx p3 ready: [tensorfold] CUDA rank 0 startup estimate 87.53 GiB within 105.17 GiB; native 262144, allocated prompt/reply window 174961, cache slots 174968 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 3 streams of 174961 prompt/reply tokens (3278 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 9.9s; 0 decode graphs captured; prompt kernels warmed in 6.3s 
+2026-09-29 15:37:02 UTC STEP concurrent_equal mlx --prompts 3
+{
+ "prompts": [
+  {
+   "solo_len_chars": 842,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 807,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 857,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  }
+ ],
+ "all_equal": true,
+ "wall_solo_s": 9.99,
+ "wall_concurrent_s": 8.23
+}
+2026-09-29 15:37:26 UTC concurrent_equal mlx p3 rc=0
+2026-09-29 15:37:28 UTC STEP stop mlx p3
+2026-09-29 15:37:28 UTC STEP start mlx --kv-dtype int8 --parallel 4 (/tf/flashnext-mlx-4bit-mtp)
+2026-09-29 15:40:09 UTC mlx p4 ready: [tensorfold] CUDA rank 0 startup estimate 87.11 GiB within 104.75 GiB; native 262144, allocated prompt/reply window 120136, cache slots 120143 [tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 4 streams of 120136 prompt/reply tokens (2321 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 8.0s; 0 decode graphs captured; prompt kernels warmed in 6.0s 
+2026-09-29 15:40:09 UTC STEP concurrent_equal mlx --prompts 4
+{
+ "prompts": [
+  {
+   "solo_len_chars": 842,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 807,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 857,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 862,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  }
+ ],
+ "all_equal": true,
+ "wall_solo_s": 15.09,
+ "wall_concurrent_s": 9.96
+}
+2026-09-29 15:40:42 UTC concurrent_equal mlx p4 rc=0
+2026-09-29 15:40:43 UTC STEP stop mlx p4
+2026-09-29 15:40:43 UTC STEP ALL STEPS DONE
+2026-09-29 15:40:43 UTC RESTORE: removing oj-f1, starting tf-serve
+2026-09-29 15:43:14 UTC RESTORE: tf-serve healthy
+2026-09-29 15:43:14 UTC WINDOW END (elapsed 42 min)

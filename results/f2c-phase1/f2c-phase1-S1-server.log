@@ -1,0 +1,13 @@
+[tensorfold] loading f1: Qwen3.8 Flash Next (qwen4_exp) on CUDA
+[tensorfold] CUDA rank 0 startup estimate 80.16 GiB within 104.96 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151
+[octojet] packed tables: 48 of 48 from cache in 32.1 s
+[tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 2 streams of 262144 prompt/reply tokens (4799 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 7.4s; 0 decode graphs captured; prompt kernels warmed in 4.0s
+[tensorfold] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 262144; loaded in 64.7s)
+[octojet] prefill timing: 18140 spans, device main 14.8 s, mtp 0.5 s, draft 0.0 s, wall 15.3 s, overflow False
+[octojet] prefill timing: 18140 spans, device main 14.8 s, mtp 0.5 s, draft 0.0 s, wall 15.3 s, overflow False
+[octojet] prefill timing: 71762 spans, device main 66.0 s, mtp 2.4 s, draft 0.0 s, wall 68.5 s, overflow False
+[octojet] prefill timing: 71762 spans, device main 65.8 s, mtp 2.4 s, draft 0.0 s, wall 68.3 s, overflow False
+[octojet] prefill timing: 71762 spans, device main 65.8 s, mtp 2.4 s, draft 0.0 s, wall 68.4 s, overflow False
+[octojet] prefill timing: 117494 spans, device main 214.0 s, mtp 12.8 s, draft 0.0 s, wall 227.0 s, overflow False
+[octojet] prefill timing: 117494 spans, device main 214.0 s, mtp 12.8 s, draft 0.0 s, wall 227.0 s, overflow False
+[octojet] prefill timing: 117494 spans, device main 213.9 s, mtp 12.8 s, draft 0.0 s, wall 227.0 s, overflow False

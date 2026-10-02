@@ -1,0 +1,14 @@
+[tensorfold] loading f1: Qwen3.8 Flash Next (qwen4_exp) on CUDA
+[tensorfold] CUDA rank 0 startup estimate 80.16 GiB within 104.14 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151
+[octojet] packed tables: 48 of 48 from cache in 32.6 s
+[tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 2 streams of 262144 prompt/reply tokens (4799 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 6.9s; 0 decode graphs captured; prompt kernels warmed in 6.5s
+[tensorfold] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 262144; loaded in 67.7s)
+GPU 0: General Metrics for NVIDIA GB20y
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-root/nsys-report-7063.qdstrm'
+[1/1] [0%                          ] f2c-210k.nsys-repProcessing events...
+[1/1] [0%                          ] f2c-210k.nsys-rep[1/1] [5%                          ] f2c-210k.nsys-rep[1/1] [6%                          ] f2c-210k.nsys-rep[1/1] [7%                          ] f2c-210k.nsys-rep[1/1] [8%                          ] f2c-210k.nsys-rep[1/1] [9%                          ] f2c-210k.nsys-rep[1/1] [10%                         ] f2c-210k.nsys-rep[1/1] [11%                         ] f2c-210k.nsys-rep[1/1] [12%                         ] f2c-210k.nsys-rep[1/1] [13%                         ] f2c-210k.nsys-rep[1/1] [14%                         ] f2c-210k.nsys-rep[1/1] [=15%                        ] f2c-210k.nsys-rep[1/1] [=16%                        ] f2c-210k.nsys-rep[1/1] [=17%                        ] f2c-210k.nsys-rep[1/1] [==18%                       ] f2c-210k.nsys-rep[1/1] [==19%                       ] f2c-210k.nsys-rep[1/1] [==20%                       ] f2c-210k.nsys-rep[1/1] [=========44%                ] f2c-210k.nsys-rep[1/1] [=========46%                ] f2c-210k.nsys-rep[1/1] [======================91%   ] f2c-210k.nsys-rep[1/1] [=======================96%  ] f2c-210k.nsys-rep[1/1] [========================98% ] f2c-210k.nsys-rep[1/1] [========================100%] f2c-210k.nsys-rep[1/1] [========================100%] f2c-210k.nsys-rep[1/1] [========================100%] f2c-210k.nsys-rep
+[octojet] prefill timing: 117494 spans, device main 218.9 s, mtp 13.1 s, draft 0.0 s, wall 245.5 s, overflow False
+Generated:
+	/tf/octojet-profiles/f2c-210k.nsys-rep

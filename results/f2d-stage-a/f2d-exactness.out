@@ -1,0 +1,309 @@
+2026-09-30T20:34:14Z exactness: container tests (OCTOJET_NVFP4_FLASHNEXT_LAYERS=4)
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+........................................................................ [ 50%]
+...............................................................FFFFFFF   [100%]
+=================================== FAILURES ===================================
+______ test_replay_refuses_bad_arguments_and_shared_gpu_without_starting _______
+
+env = {'NPP_VERSION': '13.1.2.81', 'SHELL': '/bin/bash', 'NVIDIA_VISIBLE_DEVICES': 'void', 'DALI_URL_SUFFIX': '130', ...}
+
+    def test_replay_refuses_bad_arguments_and_shared_gpu_without_starting(env):
+        for args, extra in ([[], {}], [["--caller-timeout", "0"], {}], [["--caller-timeout", "abc"], {}],
+                            [["--caller-timeout", "-3"], {}], [["--bogus"], {}], [["--caller-timeout", "30"], {"SHARED_GPU": "1"}]):
+>           r = run("f2d-a-replay.sh", env, *args, **extra)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../bench/spark/test_f2d_a_scripts.py:123: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bench/spark/test_f2d_a_scripts.py:108: in run
+    return subprocess.run(["bash", str(HERE / script), *args], env=env, capture_output=True, text=True, timeout=120)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:550: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:1209: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:2116: in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Popen: returncode: -9 args: ['bash', '/octojet/bench/spark/f2d-a-replay.sh']>
+endtime = 1625430.506548907, orig_timeout = 120, stdout_seq = []
+stderr_seq = [], skip_check_and_raise = False
+
+    def _check_timeout(self, endtime, orig_timeout, stdout_seq, stderr_seq,
+                       skip_check_and_raise=False):
+        """Convenience for checking if a timeout has expired."""
+        if endtime is None:
+            return
+        if skip_check_and_raise or _time() > endtime:
+>           raise TimeoutExpired(
+                    self.args, orig_timeout,
+                    output=b''.join(stdout_seq) if stdout_seq else None,
+                    stderr=b''.join(stderr_seq) if stderr_seq else None)
+E           subprocess.TimeoutExpired: Command '['bash', '/octojet/bench/spark/f2d-a-replay.sh']' timed out after 120 seconds
+
+/usr/lib/python3.12/subprocess.py:1253: TimeoutExpired
+______________ test_replay_sequence_pause_switch_dry_run_and_gate ______________
+
+env = {'NPP_VERSION': '13.1.2.81', 'SHELL': '/bin/bash', 'NVIDIA_VISIBLE_DEVICES': 'void', 'DALI_URL_SUFFIX': '130', ...}
+
+    def test_replay_sequence_pause_switch_dry_run_and_gate(env):
+>       r = run("f2d-a-replay.sh", env, "--caller-timeout", "30")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../bench/spark/test_f2d_a_scripts.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bench/spark/test_f2d_a_scripts.py:108: in run
+    return subprocess.run(["bash", str(HERE / script), *args], env=env, capture_output=True, text=True, timeout=120)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:550: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:1209: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:2116: in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Popen: returncode: -9 args: ['bash', '/octojet/bench/spark/f2d-a-replay.sh'...>
+endtime = 1625550.669655694, orig_timeout = 120, stdout_seq = []
+stderr_seq = [], skip_check_and_raise = False
+
+    def _check_timeout(self, endtime, orig_timeout, stdout_seq, stderr_seq,
+                       skip_check_and_raise=False):
+        """Convenience for checking if a timeout has expired."""
+        if endtime is None:
+            return
+        if skip_check_and_raise or _time() > endtime:
+>           raise TimeoutExpired(
+                    self.args, orig_timeout,
+                    output=b''.join(stdout_seq) if stdout_seq else None,
+                    stderr=b''.join(stderr_seq) if stderr_seq else None)
+E           subprocess.TimeoutExpired: Command '['bash', '/octojet/bench/spark/f2d-a-replay.sh', '--caller-timeout', '30']' timed out after 120 seconds
+
+/usr/lib/python3.12/subprocess.py:1253: TimeoutExpired
+_______________ test_replay_failed_start_removes_only_our_pause ________________
+
+env = {'NPP_VERSION': '13.1.2.81', 'SHELL': '/bin/bash', 'NVIDIA_VISIBLE_DEVICES': 'void', 'DALI_URL_SUFFIX': '130', ...}
+
+    def test_replay_failed_start_removes_only_our_pause(env):
+>       r = run("f2d-a-replay.sh", env, "--caller-timeout", "30", STUB_FAIL_START=2)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../bench/spark/test_f2d_a_scripts.py:174: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bench/spark/test_f2d_a_scripts.py:108: in run
+    return subprocess.run(["bash", str(HERE / script), *args], env=env, capture_output=True, text=True, timeout=120)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:550: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:1209: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:2116: in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Popen: returncode: -9 args: ['bash', '/octojet/bench/spark/f2d-a-replay.sh'...>
+endtime = 1625670.730498925, orig_timeout = 120, stdout_seq = []
+stderr_seq = [], skip_check_and_raise = False
+
+    def _check_timeout(self, endtime, orig_timeout, stdout_seq, stderr_seq,
+                       skip_check_and_raise=False):
+        """Convenience for checking if a timeout has expired."""
+        if endtime is None:
+            return
+        if skip_check_and_raise or _time() > endtime:
+>           raise TimeoutExpired(
+                    self.args, orig_timeout,
+                    output=b''.join(stdout_seq) if stdout_seq else None,
+                    stderr=b''.join(stderr_seq) if stderr_seq else None)
+E           subprocess.TimeoutExpired: Command '['bash', '/octojet/bench/spark/f2d-a-replay.sh', '--caller-timeout', '30']' timed out after 120 seconds
+
+/usr/lib/python3.12/subprocess.py:1253: TimeoutExpired
+__________________ test_a_pre_existing_pause_is_left_in_place __________________
+
+env = {'NPP_VERSION': '13.1.2.81', 'SHELL': '/bin/bash', 'NVIDIA_VISIBLE_DEVICES': 'void', 'DALI_URL_SUFFIX': '130', ...}
+
+    def test_a_pre_existing_pause_is_left_in_place(env):
+        Path(env["HOME"], ".spark-standby.pause").write_text("theirs")
+>       r = run("f2d-a-replay.sh", env, "--caller-timeout", "30")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../bench/spark/test_f2d_a_scripts.py:184: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bench/spark/test_f2d_a_scripts.py:108: in run
+    return subprocess.run(["bash", str(HERE / script), *args], env=env, capture_output=True, text=True, timeout=120)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:550: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:1209: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:2116: in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Popen: returncode: -9 args: ['bash', '/octojet/bench/spark/f2d-a-replay.sh'...>
+endtime = 1625790.866738534, orig_timeout = 120, stdout_seq = []
+stderr_seq = [], skip_check_and_raise = False
+
+    def _check_timeout(self, endtime, orig_timeout, stdout_seq, stderr_seq,
+                       skip_check_and_raise=False):
+        """Convenience for checking if a timeout has expired."""
+        if endtime is None:
+            return
+        if skip_check_and_raise or _time() > endtime:
+>           raise TimeoutExpired(
+                    self.args, orig_timeout,
+                    output=b''.join(stdout_seq) if stdout_seq else None,
+                    stderr=b''.join(stderr_seq) if stderr_seq else None)
+E           subprocess.TimeoutExpired: Command '['bash', '/octojet/bench/spark/f2d-a-replay.sh', '--caller-timeout', '30']' timed out after 120 seconds
+
+/usr/lib/python3.12/subprocess.py:1253: TimeoutExpired
+_____________ test_exactness_runs_tests_then_the_acceptance_server _____________
+
+env = {'NPP_VERSION': '13.1.2.81', 'SHELL': '/bin/bash', 'NVIDIA_VISIBLE_DEVICES': 'void', 'DALI_URL_SUFFIX': '130', ...}
+
+    def test_exactness_runs_tests_then_the_acceptance_server(env):
+>       r = run("f2d-a-exactness.sh", env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../bench/spark/test_f2d_a_scripts.py:191: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bench/spark/test_f2d_a_scripts.py:108: in run
+    return subprocess.run(["bash", str(HERE / script), *args], env=env, capture_output=True, text=True, timeout=120)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:550: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:1209: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:2116: in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Popen: returncode: -9 args: ['bash', '/octojet/bench/spark/f2d-a-exactness....>
+endtime = 1625910.997680245, orig_timeout = 120, stdout_seq = []
+stderr_seq = [], skip_check_and_raise = False
+
+    def _check_timeout(self, endtime, orig_timeout, stdout_seq, stderr_seq,
+                       skip_check_and_raise=False):
+        """Convenience for checking if a timeout has expired."""
+        if endtime is None:
+            return
+        if skip_check_and_raise or _time() > endtime:
+>           raise TimeoutExpired(
+                    self.args, orig_timeout,
+                    output=b''.join(stdout_seq) if stdout_seq else None,
+                    stderr=b''.join(stderr_seq) if stderr_seq else None)
+E           subprocess.TimeoutExpired: Command '['bash', '/octojet/bench/spark/f2d-a-exactness.sh']' timed out after 120 seconds
+
+/usr/lib/python3.12/subprocess.py:1253: TimeoutExpired
+_________________ test_exactness_failed_start_still_cleans_up __________________
+
+env = {'NPP_VERSION': '13.1.2.81', 'SHELL': '/bin/bash', 'NVIDIA_VISIBLE_DEVICES': 'void', 'DALI_URL_SUFFIX': '130', ...}
+
+    def test_exactness_failed_start_still_cleans_up(env):
+>       r = run("f2d-a-exactness.sh", env, STUB_FAIL_START=1)                # the acceptance server never gets healthy
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../bench/spark/test_f2d_a_scripts.py:216: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bench/spark/test_f2d_a_scripts.py:108: in run
+    return subprocess.run(["bash", str(HERE / script), *args], env=env, capture_output=True, text=True, timeout=120)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:550: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:1209: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:2116: in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Popen: returncode: -9 args: ['bash', '/octojet/bench/spark/f2d-a-exactness....>
+endtime = 1626031.129946488, orig_timeout = 120
+stdout_seq = [b'2026-09-30T20:45:59Z exactness: container tests (OCTOJET_NVFP4_FLASHNEXT_LAYERS=4)\n', b'STAGE-A TESTS rc=0\nCHUNK-SIZE TEST (stage-B evidence) rc=0\n', b'2026-09-30T20:46:20Z exactness: container tests passed\n']
+stderr_seq = [b'/etc/shinit_v2: fork: retry: Resource temporarily unavailable\n', b'/etc/shinit_v2: fork: retry: Resource temporari...v2: fork: Resource temporarily unavailable\n', b'/etc/shinit_v2: fork: retry: Resource temporarily unavailable\n', ...]
+skip_check_and_raise = False
+
+    def _check_timeout(self, endtime, orig_timeout, stdout_seq, stderr_seq,
+                       skip_check_and_raise=False):
+        """Convenience for checking if a timeout has expired."""
+        if endtime is None:
+            return
+        if skip_check_and_raise or _time() > endtime:
+>           raise TimeoutExpired(
+                    self.args, orig_timeout,
+                    output=b''.join(stdout_seq) if stdout_seq else None,
+                    stderr=b''.join(stderr_seq) if stderr_seq else None)
+E           subprocess.TimeoutExpired: Command '['bash', '/octojet/bench/spark/f2d-a-exactness.sh']' timed out after 120 seconds
+
+/usr/lib/python3.12/subprocess.py:1253: TimeoutExpired
+__________________ test_manifests_script_builds_six_manifests __________________
+
+env = {'NPP_VERSION': '13.1.2.81', 'SHELL': '/bin/bash', 'NVIDIA_VISIBLE_DEVICES': 'void', 'DALI_URL_SUFFIX': '130', ...}
+
+    def test_manifests_script_builds_six_manifests(env):
+>       r = run("f2d-a-manifests.sh", env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../bench/spark/test_f2d_a_scripts.py:227: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bench/spark/test_f2d_a_scripts.py:108: in run
+    return subprocess.run(["bash", str(HERE / script), *args], env=env, capture_output=True, text=True, timeout=120)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:550: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:1209: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/subprocess.py:2116: in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Popen: returncode: -9 args: ['bash', '/octojet/bench/spark/f2d-a-manifests....>
+endtime = 1626151.214505962, orig_timeout = 120, stdout_seq = []
+stderr_seq = [], skip_check_and_raise = False
+
+    def _check_timeout(self, endtime, orig_timeout, stdout_seq, stderr_seq,
+                       skip_check_and_raise=False):
+        """Convenience for checking if a timeout has expired."""
+        if endtime is None:
+            return
+        if skip_check_and_raise or _time() > endtime:
+>           raise TimeoutExpired(
+                    self.args, orig_timeout,
+                    output=b''.join(stdout_seq) if stdout_seq else None,
+                    stderr=b''.join(stderr_seq) if stderr_seq else None)
+E           subprocess.TimeoutExpired: Command '['bash', '/octojet/bench/spark/f2d-a-manifests.sh']' timed out after 120 seconds
+
+/usr/lib/python3.12/subprocess.py:1253: TimeoutExpired
+=========================== short test summary info ============================
+FAILED ::test_replay_refuses_bad_arguments_and_shared_gpu_without_starting - ...
+FAILED ::test_replay_sequence_pause_switch_dry_run_and_gate - subprocess.Time...
+FAILED ::test_replay_failed_start_removes_only_our_pause - subprocess.Timeout...
+FAILED ::test_a_pre_existing_pause_is_left_in_place - subprocess.TimeoutExpir...
+FAILED ::test_exactness_runs_tests_then_the_acceptance_server - subprocess.Ti...
+FAILED ::test_exactness_failed_start_still_cleans_up - subprocess.TimeoutExpi...
+FAILED ::test_manifests_script_builds_six_manifests - subprocess.TimeoutExpir...
+7 failed, 135 passed in 898.36s (0:14:58)
+...................................                                      [100%]
+35 passed, 1 deselected in 165.62s (0:02:45)
+STAGE-A TESTS rc=1
+.                                                                        [100%]
+1 passed, 23 deselected in 42.74s
+CHUNK-SIZE TEST (stage-B evidence) rc=0
+2026-09-30T20:52:49Z exactness: container tests FAILED (rc 1)
+2026-09-30T20:52:50Z exit 1
+F2D_EXACT_EXIT=1
+oj-serve restarted: 200 at 20:54:10

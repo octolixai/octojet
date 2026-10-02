@@ -1,0 +1,9 @@
+{
+ "caller_timeout_s": 30.0,
+ "parallel": 3,
+ "shared_gpu": false,
+ "commit": "ca3828719beb46605b443fb8caeba38118a932ea",
+ "image_id": "sha256:8a82c16f76e3dcf4d7f169a61709d3af57a20eb079f73c2124ff1b65ee337dd8",
+ "server_args": "-m tensorfold.cli serve /tf/flashnext-nvfp4-mixed --name f1 --host 0.0.0.0 --port 8080 --kv-dtype int8 --parallel 3 --packed-cache /tf/octojet-cache/packed",
+ "runner_http_timeout_s": 1800.0
+}

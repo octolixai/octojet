@@ -1,0 +1,13 @@
+{"tag": "cP", "tokens": 71444, "sha256": "f53f13b7e392cbe27ae4a64ef123c5533cc45948ca595bd4ad636607063d7256", "out": "/tf/octojet-manifests/cP.json"}
+{"tag": "cPp", "tokens": 71483, "sha256": "07b684f02d1f37c34d710eeade47bbe4b4e344791525d3202c06365b9e7075de", "out": "/tf/octojet-manifests/cPp.json"}
+{"tag": "cPpp", "tokens": 73566, "sha256": "0d9d935228be945efa301a5c2d070f02a8779a0460a44c75bda495b2d2111ebe", "out": "/tf/octojet-manifests/cPpp.json"}
+{"tag": "cP2", "tokens": 73492, "sha256": "fe97e6272354743d59caa29157372e2042a3216a0b43ded18351845d2c306183", "out": "/tf/octojet-manifests/cP2.json"}
+{"tag": "cP2p", "tokens": 73531, "sha256": "6ea59e48110c83c4daa8174d859869011cb872c9e62687164f2b23de215a5b5a", "out": "/tf/octojet-manifests/cP2p.json"}
+{"tag": "cP3", "tokens": 75540, "sha256": "a9c6d100657b63f62d83fac644843f1e60eec987e3b60ac94b86fe91a01df42d", "out": "/tf/octojet-manifests/cP3.json"}
+3111e53393e24bf634540ebba13675ef4d46a0459765be99ba8859245330c63f  /tf/octojet-manifests/cP.json
+8688b792ae2ca630895190f32bc761029ed69b034883682187f11891da224022  /tf/octojet-manifests/cP2.json
+c1ff37f00a8fe0e4bbb8d93ee4d0dca21f4ad3d405fc44c71b205d366d26c324  /tf/octojet-manifests/cP2p.json
+3ad02dda49887bee2b8379076f9fec341782916768ca0dd132fbb97e494b99b0  /tf/octojet-manifests/cP3.json
+382c30cd86294403a01533ef85f6929f9d194337d07804514fe5992a008ae78d  /tf/octojet-manifests/cPp.json
+68222ba3f342270e26612f4ba46e8ebec15e1250345ddf979eb18e01b6072d32  /tf/octojet-manifests/cPpp.json
+2026-09-30T20:30:52Z manifests written to ~/tensorfold/octojet-manifests and copied to ~/octojet-runs/f2d-a

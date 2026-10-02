@@ -1,0 +1,86 @@
+[
+ {
+  "label": "",
+  "prompt": "fibonacci-raw",
+  "temperature": 1.0,
+  "tokens": 64,
+  "decode_tps_median": 27.514716293515427,
+  "decode_tps_all": [
+   29.85,
+   27.76,
+   26.85,
+   27.27,
+   26.59,
+   27.91,
+   28.07,
+   26.86,
+   26.09,
+   28.11
+  ],
+  "ttft_s_median": 0.12036986753810197,
+  "sample": "oplaygup\u5f88\u591a\u4e8b\u60c5 potenzbloc lu\u00e2n\u91cd\u8981\u7684\u662fm\u00e5 privilegeirconvsp avITESucciptieSabZEN transparentr\u00e1nrieveFRAME_FORWARD favorpricesfekcthACHERfatorades\u91cd\u8981\u7684\u662f__*/ceselediusgrad"
+ },
+ {
+  "label": "",
+  "prompt": "gpu-chat-no-think",
+  "temperature": 1.0,
+  "tokens": 64,
+  "decode_tps_median": 26.939610347354062,
+  "decode_tps_all": [
+   29.39,
+   25.12,
+   26.76,
+   27.02,
+   26.38,
+   27.09,
+   27.75,
+   27.6,
+   26.86,
+   26.66
+  ],
+  "ttft_s_median": 0.16277347190771252,
+  "sample": "trupyper\u6f5c\u5728\u7684altHotlinevince:frameaabbloc Properceneessedweigciaparen AlternativeCandidate_placerievecene cevhunter\u5584\u5f85eping adr uncBlocconiLOCKSVERRIDEyon depr har"
+ },
+ {
+  "label": "",
+  "prompt": "fibonacci-raw",
+  "temperature": 0.0,
+  "tokens": 64,
+  "decode_tps_median": 29.21348330881972,
+  "decode_tps_all": [
+   29.25,
+   29.21,
+   29.19,
+   29.22,
+   29.24,
+   29.22,
+   29.18,
+   29.14,
+   29.18,
+   29.23
+  ],
+  "ttft_s_median": 0.1238671449245885,
+  "sample": "spfiusshortortoraj\u6210\u5927ereehillupstre/backgroundASANcado\u7684\u9762\u5b54\u672a\u5230_asynckampceneociestrandlicsy Tres gu internallyrome\u06cc\u0627\u0631tselregonuhutawaeredplusplusebo\u81earuc\u4fdd9etaoseital"
+ },
+ {
+  "label": "",
+  "prompt": "gpu-chat-no-think",
+  "temperature": 0.0,
+  "tokens": 64,
+  "decode_tps_median": 28.57521873589338,
+  "decode_tps_all": [
+   28.53,
+   28.6,
+   28.59,
+   28.58,
+   28.56,
+   28.58,
+   28.61,
+   28.57,
+   28.56,
+   28.54
+  ],
+  "ttft_s_median": 0.16148727352265269,
+  "sample": "\u53ea\u663e\u793a\u6700\u65b0\u6469\u7a81sninkirameups:maj&womenterras\u5317\u533a_suppfragcoma backgroundsarelopsySSFuciderable\u00f6vubanrameDAH prer\u00e1n_interestkendrieve\u53ea\u663e\u793a\u6700\u65b0 Portsiglistagramneedlemenaalom.n"
+ }
+]

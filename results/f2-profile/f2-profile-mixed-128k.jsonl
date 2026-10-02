@@ -1,0 +1,1 @@
+{"label": "f2-profile-mixed-128k", "seed": 102, "base_tokens": 93000, "prompt_tokens": 137070, "ttft_s": 80.81, "prefill_tok_s": 1696.1, "start_utc": "18:36:16", "on_first_token": {"cmd": "docker exec oj-prof nsys stop --session=oj", "rc": 0, "at_utc": "18:37:37", "took_s": 5.8}}

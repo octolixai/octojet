@@ -1,0 +1,22 @@
+2026-09-29 15:00:58 UTC WINDOW START: stopping tf-serve
+2026-09-29 15:01:03 UTC start mixed --kv-dtype int8 --parallel 2 (/tf/flashnext-nvfp4-mixed)
+2026-09-29 15:07:05 UTC concurrent_equal mixed --prompts 2
+2026-09-29 15:07:19 UTC agent_bench mixed-209k (--base-tokens 152000)
+2026-09-29 15:11:53 UTC agent_bench mixed-249k (--base-tokens 181000)
+2026-09-29 15:17:50 UTC stop mixed p2
+2026-09-29 15:17:50 UTC start mixed --kv-dtype int8 --parallel 3 (/tf/flashnext-nvfp4-mixed)
+2026-09-29 15:23:51 UTC concurrent_equal mixed --prompts 3
+2026-09-29 15:24:16 UTC stop mixed p3
+2026-09-29 15:24:16 UTC start mixed --kv-dtype int8 --parallel 4 (/tf/flashnext-nvfp4-mixed)
+2026-09-29 15:30:27 UTC concurrent_equal mixed --prompts 4
+2026-09-29 15:31:01 UTC stop mixed p4
+2026-09-29 15:31:01 UTC start mlx --kv-dtype int8 --parallel 2 (/tf/flashnext-mlx-4bit-mtp)
+2026-09-29 15:33:52 UTC concurrent_equal mlx --prompts 2
+2026-09-29 15:34:11 UTC stop mlx p2
+2026-09-29 15:34:11 UTC start mlx --kv-dtype int8 --parallel 3 (/tf/flashnext-mlx-4bit-mtp)
+2026-09-29 15:37:02 UTC concurrent_equal mlx --prompts 3
+2026-09-29 15:37:28 UTC stop mlx p3
+2026-09-29 15:37:28 UTC start mlx --kv-dtype int8 --parallel 4 (/tf/flashnext-mlx-4bit-mtp)
+2026-09-29 15:40:09 UTC concurrent_equal mlx --prompts 4
+2026-09-29 15:40:43 UTC stop mlx p4
+2026-09-29 15:40:43 UTC ALL STEPS DONE

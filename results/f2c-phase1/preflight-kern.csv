@@ -1,0 +1,6 @@
+Generating SQLite file /tf/octojet-profiles/preflight.sqlite from /tf/octojet-profiles/preflight.nsys-rep
+Processing [/tf/octojet-profiles/preflight.sqlite] with [/usr/local/cuda-13.3/NsightSystems-cli-2026.3.1/target-linux-sbsa-armv8/reports/cuda_gpu_kern_sum.py]... 
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+92.2,140865,2,70432.5,70432.5,68481,72384,2759.8,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_256x128_16x3_nn_align4>(T1::Params)
+7.8,11840,1,11840.0,11840.0,11840,11840,0.0,"void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<float>, std::array<char *, (unsigned long)1>>(int, T2, T3)"
+

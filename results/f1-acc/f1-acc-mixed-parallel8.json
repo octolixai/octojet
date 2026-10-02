@@ -1,0 +1,55 @@
+{
+ "prompts": [
+  {
+   "solo_len_chars": 861,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 811,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 861,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 898,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 845,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 858,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 880,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 822,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  }
+ ],
+ "all_equal": true,
+ "wall_solo_s": 26.95,
+ "wall_concurrent_s": 14.91
+}

@@ -1,0 +1,17 @@
+2026-09-29 12:32:41 UTC WINDOW START: stopping tf-serve
+2026-09-29 12:33:13 UTC start mixed pass 1 (/tf/flashnext-nvfp4-mixed)
+2026-09-29 12:39:25 UTC exactness E (mixed pass 1)
+2026-09-29 12:39:55 UTC bench_openai mixed-1
+2026-09-29 12:40:44 UTC agent_bench mixed-1
+2026-09-29 12:43:30 UTC start mlx pass 1 (/tf/flashnext-mlx-4bit-mtp)
+2026-09-29 12:46:11 UTC bench_openai mlx-1
+2026-09-29 12:46:55 UTC agent_bench mlx-1
+2026-09-29 12:49:32 UTC start mixed pass 2 (/tf/flashnext-nvfp4-mixed)
+2026-09-29 12:55:23 UTC bench_openai mixed-2
+2026-09-29 12:56:10 UTC agent_bench mixed-2
+2026-09-29 12:58:42 UTC acc_eval mixed
+2026-09-29 13:17:37 UTC start mlx pass 2 (/tf/flashnext-mlx-4bit-mtp)
+2026-09-29 13:20:08 UTC bench_openai mlx-2
+2026-09-29 13:20:53 UTC agent_bench mlx-2
+2026-09-29 13:23:27 UTC acc_eval mlx
+2026-09-29 13:43:25 UTC ALL STEPS DONE

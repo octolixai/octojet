@@ -1,0 +1,335 @@
+[octojet] layer 0: shared expert dequantized from fp8 (scale model.language_model.layers.0.mlp.shared_expert.gate_proj.weight_scale_inv)
+[octojet] layer 0: shared expert dequantized from fp8 (scale model.language_model.layers.0.mlp.shared_expert.up_proj.weight_scale_inv)
+[octojet] layer 0: shared expert dequantized from fp8 (scale model.language_model.layers.0.mlp.shared_expert.down_proj.weight_scale_inv)
+[octojet] layer 1: shared expert dequantized from fp8 (scale model.language_model.layers.1.mlp.shared_expert.gate_proj.weight_scale_inv)
+[octojet] layer 1: shared expert dequantized from fp8 (scale model.language_model.layers.1.mlp.shared_expert.up_proj.weight_scale_inv)
+[octojet] layer 1: shared expert dequantized from fp8 (scale model.language_model.layers.1.mlp.shared_expert.down_proj.weight_scale_inv)
+[octojet] layer 2: shared expert dequantized from fp8 (scale model.language_model.layers.2.mlp.shared_expert.gate_proj.weight_scale_inv)
+[octojet] layer 2: shared expert dequantized from fp8 (scale model.language_model.layers.2.mlp.shared_expert.up_proj.weight_scale_inv)
+[octojet] layer 2: shared expert dequantized from fp8 (scale model.language_model.layers.2.mlp.shared_expert.down_proj.weight_scale_inv)
+[octojet] layer 3: shared expert dequantized from fp8 (scale model.language_model.layers.3.mlp.shared_expert.gate_proj.weight_scale_inv)
+[octojet] layer 3: shared expert dequantized from fp8 (scale model.language_model.layers.3.mlp.shared_expert.up_proj.weight_scale_inv)
+[octojet] layer 3: shared expert dequantized from fp8 (scale model.language_model.layers.3.mlp.shared_expert.down_proj.weight_scale_inv)
+{
+ "mixed": "/tf/flashnext-nvfp4-mixed",
+ "layers": 4,
+ "tokens": 96,
+ "capacities": [
+  160768,
+  262151
+ ],
+ "seed": 3,
+ "prefill_rows": 0,
+ "self_check_mode": false,
+ "errors": [],
+ "seconds": {
+  "load_mixed": 93.4,
+  "run_mixed_160768": 62.8,
+  "run_mixed_262151": 1.2,
+  "load_mlx": 26.0,
+  "run_mlx_160768": 1.1,
+  "run_mlx_262151": 0.6,
+  "compare_160768": 0.2,
+  "compare_262151": 0.5
+ },
+ "torch": "2.13.0a0+9186a08b2c.nv26.07",
+ "device": "NVIDIA GB10",
+ "sources": {
+  "experts": "/srv/ai/flash-next-trial-20260910/hf/hub/models--RadixArk--Qwen3.8-Flash-Next-NVFP4/snapshots/7b719225242aacd3dbd3f9407468c2ee9a9d2594-fp8hybrid",
+  "base": "/tf/flashnext-mlx-4bit-mtp"
+ },
+ "is_mixed": true,
+ "meta_mixed": {
+  "cfg_layers": 4,
+  "cfg_vocab": 248320,
+  "layers_loaded": 4,
+  "nvfp4_layers": 4,
+  "expert_fmts": [
+   "nvfp4",
+   "nvfp4",
+   "nvfp4",
+   "nvfp4"
+  ],
+  "mtp_present": true,
+  "mtp_experts_fmt": "affine",
+  "ple_layers": [
+   1
+  ],
+  "draft_vocab": 79591
+ },
+ "tokens_head": [
+  201512,
+  21268,
+  44558,
+  58804,
+  45036,
+  198972,
+  215847,
+  144562,
+  9783,
+  23374,
+  82492,
+  107554,
+  154263,
+  118958,
+  65752,
+  39666
+ ],
+ "engine_mixed": {
+  "160768": {
+   "engine_capacity": 160768,
+   "state_capacity": 160768,
+   "cuda_allocated_gb": 8.732,
+   "final_pos": 96
+  },
+  "262151": {
+   "engine_capacity": 262151,
+   "state_capacity": 262151,
+   "cuda_allocated_gb": 9.182,
+   "final_pos": 96
+  }
+ },
+ "meta_mlx": {
+  "cfg_layers": 4,
+  "cfg_vocab": 248320,
+  "layers_loaded": 4,
+  "nvfp4_layers": 0,
+  "expert_fmts": [
+   "affine",
+   "affine",
+   "affine",
+   "affine"
+  ],
+  "mtp_present": true,
+  "mtp_experts_fmt": "affine",
+  "ple_layers": [
+   1
+  ],
+  "draft_vocab": 79591
+ },
+ "engine_mlx": {
+  "160768": {
+   "engine_capacity": 160768,
+   "state_capacity": 160768,
+   "cuda_allocated_gb": 9.319,
+   "final_pos": 96
+  },
+  "262151": {
+   "engine_capacity": 262151,
+   "state_capacity": 262151,
+   "cuda_allocated_gb": 9.769,
+   "final_pos": 96
+  }
+ },
+ "compare": {
+  "160768": {
+   "vocab_cols": [
+    248320,
+    248320
+   ],
+   "nonfinite_mixed": 0,
+   "nonfinite_mlx": 0,
+   "nan_mixed": 0,
+   "nan_mlx": 0,
+   "inf_mixed": 0,
+   "inf_mlx": 0,
+   "cos_mean": 0.99055,
+   "cos_min": 0.89404,
+   "cos_argmin": 57,
+   "top1_agree": 0.75,
+   "first_disagree": 3,
+   "mean_abs_logit_mixed": 0.80526,
+   "mean_abs_logit_mlx": 0.79723,
+   "std_logit_mixed": 1.03533,
+   "std_logit_mlx": 1.02184,
+   "rel_err_mean": 0.12794,
+   "mlx_top1_rank_in_mixed_median": 0,
+   "per_position": {
+    "cos": [
+     0.9971,
+     0.9931,
+     0.9693,
+     0.993,
+     0.9872,
+     0.9857,
+     0.9506,
+     0.9905,
+     0.9452,
+     0.9876,
+     0.9675,
+     0.9895,
+     0.9877,
+     0.9971,
+     0.9961,
+     0.9947
+    ],
+    "argmax_mixed": [
+     81604,
+     26700,
+     49444,
+     81494,
+     220,
+     47062,
+     68934,
+     103554,
+     50460,
+     243284,
+     224322,
+     3419,
+     204498,
+     138480,
+     19640,
+     56933
+    ],
+    "argmax_mlx": [
+     81604,
+     26700,
+     49444,
+     107300,
+     110738,
+     85327,
+     14824,
+     103554,
+     5157,
+     38675,
+     224322,
+     122802,
+     193729,
+     138480,
+     54708,
+     56933
+    ],
+    "rel_err": [
+     0.0826,
+     0.1272,
+     0.2681,
+     0.1244,
+     0.1599,
+     0.1749,
+     0.3447,
+     0.1373,
+     0.3465,
+     0.1584,
+     0.2611,
+     0.1493,
+     0.1569,
+     0.0866,
+     0.0897,
+     0.1032
+    ]
+   },
+   "ok": false
+  },
+  "262151": {
+   "vocab_cols": [
+    248320,
+    248320
+   ],
+   "nonfinite_mixed": 0,
+   "nonfinite_mlx": 0,
+   "nan_mixed": 0,
+   "nan_mlx": 0,
+   "inf_mixed": 0,
+   "inf_mlx": 0,
+   "cos_mean": 0.99055,
+   "cos_min": 0.89404,
+   "cos_argmin": 57,
+   "top1_agree": 0.75,
+   "first_disagree": 3,
+   "mean_abs_logit_mixed": 0.80526,
+   "mean_abs_logit_mlx": 0.79723,
+   "std_logit_mixed": 1.03533,
+   "std_logit_mlx": 1.02184,
+   "rel_err_mean": 0.12794,
+   "mlx_top1_rank_in_mixed_median": 0,
+   "per_position": {
+    "cos": [
+     0.9971,
+     0.9931,
+     0.9693,
+     0.993,
+     0.9872,
+     0.9857,
+     0.9506,
+     0.9905,
+     0.9452,
+     0.9876,
+     0.9675,
+     0.9895,
+     0.9877,
+     0.9971,
+     0.9961,
+     0.9947
+    ],
+    "argmax_mixed": [
+     81604,
+     26700,
+     49444,
+     81494,
+     220,
+     47062,
+     68934,
+     103554,
+     50460,
+     243284,
+     224322,
+     3419,
+     204498,
+     138480,
+     19640,
+     56933
+    ],
+    "argmax_mlx": [
+     81604,
+     26700,
+     49444,
+     107300,
+     110738,
+     85327,
+     14824,
+     103554,
+     5157,
+     38675,
+     224322,
+     122802,
+     193729,
+     138480,
+     54708,
+     56933
+    ],
+    "rel_err": [
+     0.0826,
+     0.1272,
+     0.2681,
+     0.1244,
+     0.1599,
+     0.1749,
+     0.3447,
+     0.1373,
+     0.3465,
+     0.1584,
+     0.2611,
+     0.1493,
+     0.1569,
+     0.0866,
+     0.0897,
+     0.1032
+    ]
+   },
+   "ok": false
+  }
+ },
+ "prefill": {},
+ "prefill_vs_onerow": {},
+ "capacity_self": {
+  "mixed": {
+   "bitwise_equal": true,
+   "max_abs_diff": 0.0
+  },
+  "mlx": {
+   "bitwise_equal": true,
+   "max_abs_diff": 0.0
+  }
+ },
+ "verdict": "mixed_cut_wrong"
+}

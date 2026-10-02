@@ -1,0 +1,1 @@
+{"prompt_tokens": 151759, "output_tokens": 552, "ttft_s": 107.38, "decode_tps": 38.9, "total_s": 121.57, "label": "mlx-1", "turn": 0, "kind": "cold"}

@@ -1,0 +1,26 @@
+dry-run arm=clean rep=2 draft=on fields=- timing_file=-
+dry-run arm=profile rep=2 draft=on fields=profile,timing timing_file=~/octojet-runs/f2c-phase1/f2c-phase1-S2-210k.jsonl-profile-2-timing.json
+2026-09-30T12:30:51Z dry-run OK: every planned request parses and no artifact collides
+2026-09-30T12:30:51Z PAUSE A START: stopping oj-serve and the 27B
+2026-09-30T12:30:54Z S2: page cache dropped
+               total        used        free      shared  buff/cache   available
+Mem:             121           3         118           0           0         117
+Swap:             15           1          14
+2026-09-30T12:30:54Z S2: process start
+2026-09-30T12:32:04Z S2: healthy after 70s
+[tensorfold] CUDA rank 0 startup estimate 80.16 GiB within 104.14 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151
+[tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 2 streams of 262144 prompt/reply tokens (4799 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 6.9s; 0 decode graphs captured; prompt kernels warmed in 6.5s
+2026-09-30T12:32:04Z S2: selector warm-up (140k)
+{"label": "S2-warmup", "arm": "clean", "rep": 2, "untimed": false, "draft": true, "prompt_tokens": 140000, "prompt_sha_ok": true, "ttft_s": 87.19440934201702, "received_at": 1596321.232885483, "queued_at": 1596321.234932239, "admitted_at": 1596321.235076159, "first_token_at": 1596408.427294825, "client_send_at": 1596321.197088762, "client_first_sse_at": 1596408.428089195, "client_wall_s": 87.28975013596937, "cached": 0, "profiler_rc": null, "notes": null, "timing_file": null, "usage": {"prompt_tokens": 140000, "completion_tokens": 2, "total_tokens": 140002}}
+{"label": "S2-210k", "arm": "profile", "rep": 2, "untimed": false, "draft": true, "prompt_tokens": 210000, "prompt_sha_ok": true, "ttft_s": 233.01729169208556, "received_at": 1596408.608889449, "queued_at": 1596408.610972189, "admitted_at": 1596408.611455774, "first_token_at": 1596641.626181141, "client_send_at": 1596408.576489808, "client_first_sse_at": 1596654.141311347, "client_wall_s": 246.19811583892442, "cached": 0, "profiler_rc": [0, 0], "notes": null, "timing_file": "~/octojet-runs/f2c-phase1/f2c-phase1-S2-210k.jsonl-profile-2-timing.json", "usage": {"prompt_tokens": 210000, "completion_tokens": 2, "total_tokens": 210002}}
+VmHWM:	  225404 kB
+VmRSS:	  190816 kB
+2026-09-30T12:37:40Z S2: stopped
+2026-09-30T12:37:50Z f2c-210k: report written (81497161 bytes, nsys Generated line seen); nsys stats / export / reduction run after production is restored
+2026-09-30T12:37:51Z RESTORE (exit 0): starting oj-serve and the 27B
+2026-09-30T12:38:46Z PRODUCTION RESTORED
+~/tensorfold/octojet-profiles/f2c-210k-kern.csv: 58 kernel rows; columns ['Generating SQLite file /tf/octojet-profiles/f2c-210k.sqlite from /tf/octojet-profiles/f2c-210k.nsys-rep']
+2026-09-30T12:39:03Z f2c-210k: no kernel rows in the report
+2026-09-30T12:39:03Z S2: REDUCTION INVALID
+2026-09-30T12:39:04Z PAUSE A: an nsys capture was INVALID (marker file in ~/octojet-runs/f2c-phase1); the results task must not use it
+PAUSE_A2_EXIT=1

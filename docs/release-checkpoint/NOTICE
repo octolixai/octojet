@@ -1,0 +1,28 @@
+Qwen3.8 Flash Next, Octojet NVFP4 (octolix/Qwen3.8-Flash-Next-Octojet-NVFP4)
+
+This checkpoint is a derivative of Qwen3.8 Flash Next and is distributed under the Qwen Community License 1.0,
+whose full text is in the LICENSE file of this repository. It contains no retrained or requantized weights: every
+tensor is copied byte for byte from the two sources below.
+
+Model
+  Qwen3.8 Flash Next, by the Qwen team. Copyright (c) 2026 Qwen.
+  https://huggingface.co/Qwen/Qwen3.8-Flash-Next
+
+Routed experts and shared experts (NVFP4 / bf16)
+  RadixArk/Qwen3.8-Flash-Next-NVFP4, revision 7b719225242aacd3dbd3f9407468c2ee9a9d2594, quantized with
+  NVIDIA Model Optimizer. Its terms of use defer to the source model's license.
+  https://huggingface.co/RadixArk/Qwen3.8-Flash-Next-NVFP4
+
+All other tensors (attention, DeltaNet, routers, embeddings, n-gram tables, head, MTP head, vision tower)
+  Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP, revision 2b170fa6309d5d1ee380b35636075fac7945f286 (MLX conversion,
+  native-MTP preservation and packaging by Vontra), under the Qwen Community License 1.0.
+  https://huggingface.co/Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP
+
+Packaging
+  Assembled by Octolix with Octojet's engine/tools/build_release_checkpoint.py (https://github.com/octolixai/octojet,
+  MIT License). octojet.json in this repository records the sources and revisions.
+
+License reminder
+  Clause 2 of the Qwen Community License 1.0: a licensee (or affiliate) that runs a Model as a Service or AI Work
+  Assistant business must obtain a separate license from Qwen before using the model or its derivatives for any
+  commercial purpose. Read LICENSE before commercial use.

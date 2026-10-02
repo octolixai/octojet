@@ -1,0 +1,16 @@
+[tensorfold] loading f1: Qwen3.8 Flash Next (qwen4_exp) on CUDA
+[tensorfold] CUDA rank 0 startup estimate 84.98 GiB within 105.12 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151
+[octojet] packed tables: 48 of 48 from cache in 33.2 s
+[tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 3 streams of 262144 prompt/reply tokens (4799 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 7.8s; 0 decode graphs captured; prompt kernels warmed in 4.7s
+[tensorfold] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 262144; loaded in 66.6s)
+[octojet] prefix reuse exact 71444/71444 tokens
+[octojet] prefix reuse exact 71444/71444 tokens
+[octojet] prefix reuse exact 71444/71444 tokens
+[octojet] prefix reuse exact 71444/71444 tokens
+[octojet] prefix reuse extend 71444/73492 tokens
+[octojet] prefix reuse exact 73492/73492 tokens
+[octojet] prefix reuse exact 73492/73492 tokens
+[octojet] prefix reuse exact 73492/73492 tokens
+[octojet] prefix reuse exact 73492/73492 tokens
+[octojet] prefix reuse extend 73492/75540 tokens
+[octojet] prefix reuse exact 75540/75540 tokens

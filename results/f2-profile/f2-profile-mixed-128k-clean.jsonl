@@ -1,0 +1,1 @@
+{"label": "f2-profile-mixed-128k-clean", "seed": 101, "base_tokens": 93000, "prompt_tokens": 136630, "ttft_s": 80.52, "prefill_tok_s": 1696.9, "start_utc": "18:34:54", "on_first_token": null}

@@ -1,0 +1,86 @@
+[
+ {
+  "label": "",
+  "prompt": "fibonacci-raw",
+  "temperature": 1.0,
+  "tokens": 64,
+  "decode_tps_median": 35.952223893394034,
+  "decode_tps_all": [
+   39.31,
+   34.68,
+   35.93,
+   35.78,
+   36.12,
+   36.03,
+   35.29,
+   35.98,
+   33.32,
+   36.16
+  ],
+  "ttft_s_median": 0.0975833215052262,
+  "sample": "\n\n<think>\n\n</think>\n\n# Fibonacci Sequence in Python\n\n## Implementation\n\n```python\ndef fibonacci(n: int) -> list[int]:\n    \"\"\"\n    Compute the first `n` numbers "
+ },
+ {
+  "label": "",
+  "prompt": "gpu-chat-no-think",
+  "temperature": 1.0,
+  "tokens": 64,
+  "decode_tps_median": 34.7277182097646,
+  "decode_tps_all": [
+   38.98,
+   32.95,
+   35.7,
+   33.99,
+   34.14,
+   34.32,
+   36.42,
+   35.13,
+   32.76,
+   37.5
+  ],
+  "ttft_s_median": 0.13365403143689036,
+  "sample": "### Part 1: How Matrix Multiplication Uses a GPU (Plain English)\n\nImagine you have a huge table of numbers (Matrix A) and another huge table of numbers (Matrix "
+ },
+ {
+  "label": "",
+  "prompt": "fibonacci-raw",
+  "temperature": 0.0,
+  "tokens": 64,
+  "decode_tps_median": 39.35253745256695,
+  "decode_tps_all": [
+   39.32,
+   39.33,
+   39.39,
+   39.42,
+   39.3,
+   39.43,
+   39.2,
+   39.33,
+   39.42,
+   39.38
+  ],
+  "ttft_s_median": 0.09753447852563113,
+  "sample": "\n\n<think>\n\n</think>\n\nHere is a concise and efficient Python function to compute the Fibonacci sequence, followed by a detailed explanation.\n\n### Python Function"
+ },
+ {
+  "label": "",
+  "prompt": "gpu-chat-no-think",
+  "temperature": 0.0,
+  "tokens": 64,
+  "decode_tps_median": 39.20932475016576,
+  "decode_tps_all": [
+   39.16,
+   39.15,
+   39.33,
+   39.32,
+   39.29,
+   39.14,
+   39.13,
+   39.26,
+   39.1,
+   39.32
+  ],
+  "ttft_s_median": 0.1324672260088846,
+  "sample": "Here is an explanation of how matrix multiplication works on a GPU, followed by a small numerical example.\n\n### Part 1: How Matrix Multiplication Uses a GPU (Pl"
+ }
+]

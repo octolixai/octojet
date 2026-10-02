@@ -1,0 +1,2 @@
+{"prompt_tokens": 250533, "output_tokens": 555, "ttft_s": 310.39, "decode_tps": 39.9, "total_s": 324.28, "label": "mixed-249k", "turn": 0, "kind": "cold"}
+{"prompt_tokens": 260457, "output_tokens": 477, "ttft_s": 21.06, "decode_tps": 48.8, "total_s": 30.82, "label": "mixed-249k", "turn": 1, "kind": "follow-up"}

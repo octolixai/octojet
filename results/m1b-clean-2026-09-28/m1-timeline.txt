@@ -1,0 +1,5 @@
+2026-09-29T01:03:41Z probe start
+2026-09-29T01:03:48Z fp4_bench start
+2026-09-29T01:04:01Z tf_baseline start
+2026-09-29T01:04:09Z fp4_bench repeat start
+2026-09-29T01:04:16Z done

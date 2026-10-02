@@ -1,0 +1,16 @@
+-m
+tensorfold.cli
+serve
+MODEL
+--name
+f1
+--host
+0.0.0.0
+--port
+8080
+--kv-dtype
+int8
+--parallel
+2
+--packed-cache
+/tf/octojet-cache/packed

@@ -1,0 +1,70 @@
+{
+ "mixed": "/tf/flashnext-nvfp4-mixed",
+ "layers": 4,
+ "tokens": 96,
+ "capacities": [
+  512,
+  262151
+ ],
+ "seed": 3,
+ "prefill_rows": 0,
+ "self_check_mode": true,
+ "errors": [],
+ "seconds": {
+  "load_mixed": 82.6,
+  "self_check": 82.1
+ },
+ "torch": "2.13.0a0+9186a08b2c.nv26.07",
+ "device": "NVIDIA GB10",
+ "sources": {
+  "experts": "/srv/ai/flash-next-trial-20260910/hf/hub/models--RadixArk--Qwen3.8-Flash-Next-NVFP4/snapshots/7b719225242aacd3dbd3f9407468c2ee9a9d2594-fp8hybrid",
+  "base": "/tf/flashnext-mlx-4bit-mtp"
+ },
+ "is_mixed": true,
+ "meta_mixed": {
+  "cfg_layers": 4,
+  "cfg_vocab": 248320,
+  "layers_loaded": 4,
+  "nvfp4_layers": 4,
+  "expert_fmts": [
+   "nvfp4",
+   "nvfp4",
+   "nvfp4",
+   "nvfp4"
+  ],
+  "mtp_present": true,
+  "mtp_experts_fmt": "affine",
+  "ple_layers": [
+   1
+  ],
+  "draft_vocab": 79591
+ },
+ "self_check": {
+  "tokens": 40,
+  "ref_nonfinite": 0,
+  "window_1_bitwise_equal": true,
+  "window_1_torch_equal": true,
+  "window_1_max_abs_diff": 0.0,
+  "window_8_bitwise_equal": true,
+  "window_8_torch_equal": true,
+  "window_8_max_abs_diff": 0.0,
+  "greedy_head": [
+   238376,
+   899,
+   102025,
+   2259,
+   63206,
+   220,
+   4704,
+   33604,
+   63206,
+   65838,
+   46861,
+   6204,
+   142269,
+   90712,
+   63206,
+   18161
+  ]
+ }
+}

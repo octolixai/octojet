@@ -1,0 +1,5 @@
+2026-09-29 14:46:14 UTC WINDOW START: stopping tf-serve
+2026-09-29 14:46:20 UTC start mixed single-stream (/tf/flashnext-nvfp4-mixed)
+2026-09-29 14:52:22 UTC agent_bench mixed-210k (single stream)
+2026-09-29 14:52:24 UTC stop mixed
+2026-09-29 14:52:24 UTC ALL STEPS DONE

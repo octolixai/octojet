@@ -1,0 +1,2 @@
+{"check":"toolkit","device":"NVIDIA GB10","cc":"12.1","sms":48,"runtime":13030,"driver":13030,"fp4":true,"fp8":true,"cond":true}
+{"check":"error","ok":false,"where":"cudaMalloc(&sink, 4)","msg":"out of memory"}

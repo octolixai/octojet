@@ -1,0 +1,427 @@
+{
+ "mixed": "/tf/flashnext-nvfp4-mixed",
+ "layers": 4,
+ "tokens": 96,
+ "capacities": [
+  160768,
+  262151
+ ],
+ "seed": 3,
+ "prefill_rows": 64,
+ "self_check_mode": false,
+ "errors": [
+  {
+   "step": "prefill_vs_onerow_160768",
+   "error": "RuntimeError('The size of tensor a (2) must match the size of tensor b (96) at non-singleton dimension 0')",
+   "traceback": "Traceback (most recent call last):\n  File \"/octojet/engine/tools/diag_cut_compare.py\", line 331, in run\n    n: within(plogits[n][cap], logits[n][cap]) if cap in plogits[n] and cap in logits[n]\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/octojet/engine/tools/diag_cut_compare.py\", line 180, in within\n    cos = torch.nn.functional.cosine_similarity(a0.double(), b0.double(), dim=-1).float()\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: The size of tensor a (2) must match the size of tensor b (96) at non-singleton dimension 0\n"
+  },
+  {
+   "step": "prefill_vs_onerow_262151",
+   "error": "RuntimeError('The size of tensor a (2) must match the size of tensor b (96) at non-singleton dimension 0')",
+   "traceback": "Traceback (most recent call last):\n  File \"/octojet/engine/tools/diag_cut_compare.py\", line 331, in run\n    n: within(plogits[n][cap], logits[n][cap]) if cap in plogits[n] and cap in logits[n]\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/octojet/engine/tools/diag_cut_compare.py\", line 180, in within\n    cos = torch.nn.functional.cosine_similarity(a0.double(), b0.double(), dim=-1).float()\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: The size of tensor a (2) must match the size of tensor b (96) at non-singleton dimension 0\n"
+  }
+ ],
+ "seconds": {
+  "load_mixed": 54.0,
+  "run_mixed_160768": 117.0,
+  "run_mixed_262151": 2.0,
+  "load_mlx": 32.2,
+  "run_mlx_160768": 1.5,
+  "run_mlx_262151": 1.3,
+  "compare_160768": 0.3,
+  "compare_262151": 0.2,
+  "compare_prefill_160768": 0.0,
+  "prefill_vs_onerow_160768": 0.1,
+  "compare_prefill_262151": 0.0,
+  "prefill_vs_onerow_262151": 0.0
+ },
+ "torch": "2.13.0a0+9186a08b2c.nv26.07",
+ "device": "NVIDIA GB10",
+ "sources": {
+  "experts": "/srv/ai/flash-next-trial-20260910/hf/hub/models--RadixArk--Qwen3.8-Flash-Next-NVFP4/snapshots/7b719225242aacd3dbd3f9407468c2ee9a9d2594-fp8hybrid",
+  "base": "/tf/flashnext-mlx-4bit-mtp"
+ },
+ "is_mixed": true,
+ "meta_mixed": {
+  "cfg_layers": 4,
+  "cfg_vocab": 248320,
+  "layers_loaded": 4,
+  "nvfp4_layers": 4,
+  "expert_fmts": [
+   "nvfp4",
+   "nvfp4",
+   "nvfp4",
+   "nvfp4"
+  ],
+  "mtp_present": true,
+  "mtp_experts_fmt": "affine",
+  "ple_layers": [
+   1
+  ],
+  "draft_vocab": 79591
+ },
+ "tokens_head": [
+  201512,
+  21268,
+  44558,
+  58804,
+  45036,
+  198972,
+  215847,
+  144562,
+  9783,
+  23374,
+  82492,
+  107554,
+  154263,
+  118958,
+  65752,
+  39666
+ ],
+ "engine_mixed": {
+  "160768": {
+   "engine_capacity": 160768,
+   "state_capacity": 160768,
+   "cuda_allocated_gb": 8.732,
+   "final_pos": 96,
+   "prefill_final_pos": 96
+  },
+  "262151": {
+   "engine_capacity": 262151,
+   "state_capacity": 262151,
+   "cuda_allocated_gb": 9.182,
+   "final_pos": 96,
+   "prefill_final_pos": 96
+  }
+ },
+ "meta_mlx": {
+  "cfg_layers": 4,
+  "cfg_vocab": 248320,
+  "layers_loaded": 4,
+  "nvfp4_layers": 0,
+  "expert_fmts": [
+   "affine",
+   "affine",
+   "affine",
+   "affine"
+  ],
+  "mtp_present": true,
+  "mtp_experts_fmt": "affine",
+  "ple_layers": [
+   1
+  ],
+  "draft_vocab": 79591
+ },
+ "engine_mlx": {
+  "160768": {
+   "engine_capacity": 160768,
+   "state_capacity": 160768,
+   "cuda_allocated_gb": 9.319,
+   "final_pos": 96,
+   "prefill_final_pos": 96
+  },
+  "262151": {
+   "engine_capacity": 262151,
+   "state_capacity": 262151,
+   "cuda_allocated_gb": 9.769,
+   "final_pos": 96,
+   "prefill_final_pos": 96
+  }
+ },
+ "compare": {
+  "160768": {
+   "vocab_cols": [
+    248320,
+    248320
+   ],
+   "nonfinite_mixed": 0,
+   "nonfinite_mlx": 0,
+   "nan_mixed": 0,
+   "nan_mlx": 0,
+   "inf_mixed": 0,
+   "inf_mlx": 0,
+   "cos_mean": 0.08236,
+   "cos_min": -0.34917,
+   "cos_argmin": 4,
+   "top1_agree": 0.0,
+   "first_disagree": 0,
+   "mean_abs_logit_mixed": 0.92947,
+   "mean_abs_logit_mlx": 0.79723,
+   "std_logit_mixed": 1.20461,
+   "std_logit_mlx": 1.02184,
+   "rel_err_mean": 1.5863,
+   "mlx_top1_rank_in_mixed_median": 105081,
+   "per_position": {
+    "cos": [
+     0.0461,
+     -0.1667,
+     0.0751,
+     -0.0839,
+     -0.3492,
+     -0.0939,
+     0.0734,
+     0.0681,
+     0.0701,
+     0.0609,
+     0.2026,
+     0.0755,
+     0.1259,
+     0.1284,
+     0.089,
+     0.0747
+    ],
+    "argmax_mixed": [
+     238376,
+     899,
+     102025,
+     2259,
+     63206,
+     220,
+     4704,
+     33604,
+     63206,
+     65838,
+     46861,
+     6204,
+     142269,
+     90712,
+     63206,
+     18161
+    ],
+    "argmax_mlx": [
+     81604,
+     26700,
+     49444,
+     107300,
+     110738,
+     85327,
+     14824,
+     103554,
+     5157,
+     38675,
+     224322,
+     122802,
+     193729,
+     138480,
+     54708,
+     56933
+    ],
+    "rel_err": [
+     1.1068,
+     3.0235,
+     1.1375,
+     1.4676,
+     1.3497,
+     2.476,
+     2.3337,
+     1.6471,
+     1.3005,
+     2.2847,
+     1.0811,
+     1.4429,
+     1.3307,
+     1.1411,
+     1.3807,
+     1.2192
+    ]
+   },
+   "ok": false
+  },
+  "262151": {
+   "vocab_cols": [
+    248320,
+    248320
+   ],
+   "nonfinite_mixed": 0,
+   "nonfinite_mlx": 0,
+   "nan_mixed": 0,
+   "nan_mlx": 0,
+   "inf_mixed": 0,
+   "inf_mlx": 0,
+   "cos_mean": 0.08236,
+   "cos_min": -0.34917,
+   "cos_argmin": 4,
+   "top1_agree": 0.0,
+   "first_disagree": 0,
+   "mean_abs_logit_mixed": 0.92947,
+   "mean_abs_logit_mlx": 0.79723,
+   "std_logit_mixed": 1.20461,
+   "std_logit_mlx": 1.02184,
+   "rel_err_mean": 1.5863,
+   "mlx_top1_rank_in_mixed_median": 105081,
+   "per_position": {
+    "cos": [
+     0.0461,
+     -0.1667,
+     0.0751,
+     -0.0839,
+     -0.3492,
+     -0.0939,
+     0.0734,
+     0.0681,
+     0.0701,
+     0.0609,
+     0.2026,
+     0.0755,
+     0.1259,
+     0.1284,
+     0.089,
+     0.0747
+    ],
+    "argmax_mixed": [
+     238376,
+     899,
+     102025,
+     2259,
+     63206,
+     220,
+     4704,
+     33604,
+     63206,
+     65838,
+     46861,
+     6204,
+     142269,
+     90712,
+     63206,
+     18161
+    ],
+    "argmax_mlx": [
+     81604,
+     26700,
+     49444,
+     107300,
+     110738,
+     85327,
+     14824,
+     103554,
+     5157,
+     38675,
+     224322,
+     122802,
+     193729,
+     138480,
+     54708,
+     56933
+    ],
+    "rel_err": [
+     1.1068,
+     3.0235,
+     1.1375,
+     1.4676,
+     1.3497,
+     2.476,
+     2.3337,
+     1.6471,
+     1.3005,
+     2.2847,
+     1.0811,
+     1.4429,
+     1.3307,
+     1.1411,
+     1.3807,
+     1.2192
+    ]
+   },
+   "ok": false
+  }
+ },
+ "prefill": {
+  "160768": {
+   "vocab_cols": [
+    248320,
+    248320
+   ],
+   "nonfinite_mixed": 0,
+   "nonfinite_mlx": 0,
+   "nan_mixed": 0,
+   "nan_mlx": 0,
+   "inf_mixed": 0,
+   "inf_mlx": 0,
+   "cos_mean": 0.23575,
+   "cos_min": -0.01222,
+   "cos_argmin": 1,
+   "top1_agree": 0.0,
+   "first_disagree": 0,
+   "mean_abs_logit_mixed": 0.84307,
+   "mean_abs_logit_mlx": 0.79979,
+   "std_logit_mixed": 1.10363,
+   "std_logit_mlx": 0.92485,
+   "rel_err_mean": 1.44774,
+   "mlx_top1_rank_in_mixed_median": 32890,
+   "per_position": {
+    "cos": [
+     0.4837,
+     -0.0122
+    ],
+    "argmax_mixed": [
+     91487,
+     1657
+    ],
+    "argmax_mlx": [
+     20641,
+     32768
+    ],
+    "rel_err": [
+     0.8813,
+     2.0142
+    ]
+   },
+   "ok": false
+  },
+  "262151": {
+   "vocab_cols": [
+    248320,
+    248320
+   ],
+   "nonfinite_mixed": 0,
+   "nonfinite_mlx": 0,
+   "nan_mixed": 0,
+   "nan_mlx": 0,
+   "inf_mixed": 0,
+   "inf_mlx": 0,
+   "cos_mean": 0.23575,
+   "cos_min": -0.01222,
+   "cos_argmin": 1,
+   "top1_agree": 0.0,
+   "first_disagree": 0,
+   "mean_abs_logit_mixed": 0.84307,
+   "mean_abs_logit_mlx": 0.79979,
+   "std_logit_mixed": 1.10363,
+   "std_logit_mlx": 0.92485,
+   "rel_err_mean": 1.44774,
+   "mlx_top1_rank_in_mixed_median": 32890,
+   "per_position": {
+    "cos": [
+     0.4837,
+     -0.0122
+    ],
+    "argmax_mixed": [
+     91487,
+     1657
+    ],
+    "argmax_mlx": [
+     20641,
+     32768
+    ],
+    "rel_err": [
+     0.8813,
+     2.0142
+    ]
+   },
+   "ok": false
+  }
+ },
+ "prefill_vs_onerow": {},
+ "capacity_self": {
+  "mixed": {
+   "bitwise_equal": true,
+   "max_abs_diff": 0.0
+  },
+  "mlx": {
+   "bitwise_equal": true,
+   "max_abs_diff": 0.0
+  }
+ },
+ "verdict": "mixed_cut_wrong"
+}

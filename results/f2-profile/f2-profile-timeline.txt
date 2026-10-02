@@ -1,0 +1,16 @@
+2026-09-29 17:03:55 UTC WINDOW START: stopping oj-serve
+2026-09-29 17:03:58 UTC start mixed under nsys launch (/tf/flashnext-nvfp4-mixed) --kv-dtype int8 --parallel 3
+2026-09-29 18:17:17 UTC WINDOW START: stopping oj-serve
+2026-09-29 18:17:20 UTC A2 timing mixed
+2026-09-29 18:24:39 UTC A2 timing mlx
+2026-09-29 18:28:42 UTC start mixed under nsys launch (/tf/flashnext-nvfp4-mixed) --kv-dtype int8 --parallel 3
+2026-09-29 18:34:54 UTC request f2-profile-mixed-128k-clean (base 93000, seed 101)
+2026-09-29 18:36:16 UTC nsys start f2-profile-mixed-128k
+2026-09-29 18:36:16 UTC request f2-profile-mixed-128k (base 93000, seed 102)
+2026-09-29 18:37:42 UTC nsys stopped f2-profile-mixed-128k (see hook in f2-profile-mixed-128k.jsonl)
+2026-09-29 18:37:49 UTC start mlx under nsys launch (/tf/flashnext-mlx-4bit-mtp) --kv-dtype int8 --parallel 3
+2026-09-29 18:40:40 UTC request f2-profile-mlx-128k-clean (base 93000, seed 201)
+2026-09-29 18:42:00 UTC nsys start f2-profile-mlx-128k
+2026-09-29 18:42:00 UTC request f2-profile-mlx-128k (base 93000, seed 202)
+2026-09-29 18:43:24 UTC nsys stopped f2-profile-mlx-128k (see hook in f2-profile-mlx-128k.jsonl)
+2026-09-29 18:43:28 UTC ALL RUNS DONE

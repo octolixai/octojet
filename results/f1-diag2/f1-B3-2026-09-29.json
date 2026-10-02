@@ -1,0 +1,517 @@
+[octojet] layer 0: shared expert dequantized from fp8 (scale model.language_model.layers.0.mlp.shared_expert.gate_proj.weight_scale_inv)
+[octojet] layer 0: shared expert dequantized from fp8 (scale model.language_model.layers.0.mlp.shared_expert.up_proj.weight_scale_inv)
+[octojet] layer 0: shared expert dequantized from fp8 (scale model.language_model.layers.0.mlp.shared_expert.down_proj.weight_scale_inv)
+[octojet] layer 3: shared expert dequantized from fp8 (scale model.language_model.layers.3.mlp.shared_expert.gate_proj.weight_scale_inv)
+[octojet] layer 3: shared expert dequantized from fp8 (scale model.language_model.layers.3.mlp.shared_expert.up_proj.weight_scale_inv)
+[octojet] layer 3: shared expert dequantized from fp8 (scale model.language_model.layers.3.mlp.shared_expert.down_proj.weight_scale_inv)
+[octojet] layer 24: shared expert dequantized from fp8 (scale model.language_model.layers.24.mlp.shared_expert.gate_proj.weight_scale_inv)
+[octojet] layer 24: shared expert dequantized from fp8 (scale model.language_model.layers.24.mlp.shared_expert.up_proj.weight_scale_inv)
+[octojet] layer 24: shared expert dequantized from fp8 (scale model.language_model.layers.24.mlp.shared_expert.down_proj.weight_scale_inv)
+[octojet] layer 47: shared expert dequantized from fp8 (scale model.language_model.layers.47.mlp.shared_expert.gate_proj.weight_scale_inv)
+[octojet] layer 47: shared expert dequantized from fp8 (scale model.language_model.layers.47.mlp.shared_expert.up_proj.weight_scale_inv)
+[octojet] layer 47: shared expert dequantized from fp8 (scale model.language_model.layers.47.mlp.shared_expert.down_proj.weight_scale_inv)
+{
+ "routers_equal": true,
+ "pairs": [
+  {
+   "layer": 0,
+   "expert": 0,
+   "proj": "gate_proj",
+   "cos": 0.9919,
+   "norm_ratio": 1.0006,
+   "rel_err": 0.1259,
+   "ok": true,
+   "cos_shifted": 0.0001
+  },
+  {
+   "layer": 0,
+   "expert": 7,
+   "proj": "gate_proj",
+   "cos": 0.9919,
+   "norm_ratio": 1.0005,
+   "rel_err": 0.1259,
+   "ok": true,
+   "cos_shifted": 0.0001
+  },
+  {
+   "layer": 0,
+   "expert": 511,
+   "proj": "gate_proj",
+   "cos": 0.9919,
+   "norm_ratio": 1.001,
+   "rel_err": 0.1258,
+   "ok": true,
+   "cos_shifted": -0.0006
+  },
+  {
+   "layer": 0,
+   "expert": "shared",
+   "proj": "gate_proj",
+   "cos": 0.9916,
+   "norm_ratio": 0.9991,
+   "rel_err": 0.1269,
+   "ok": true
+  },
+  {
+   "layer": 0,
+   "expert": 0,
+   "proj": "up_proj",
+   "cos": 0.9919,
+   "norm_ratio": 1.0004,
+   "rel_err": 0.1255,
+   "ok": true,
+   "cos_shifted": -0.0006
+  },
+  {
+   "layer": 0,
+   "expert": 7,
+   "proj": "up_proj",
+   "cos": 0.9919,
+   "norm_ratio": 1.0005,
+   "rel_err": 0.1256,
+   "ok": true,
+   "cos_shifted": 0.0
+  },
+  {
+   "layer": 0,
+   "expert": 511,
+   "proj": "up_proj",
+   "cos": 0.992,
+   "norm_ratio": 1.0014,
+   "rel_err": 0.1255,
+   "ok": true,
+   "cos_shifted": 0.0005
+  },
+  {
+   "layer": 0,
+   "expert": "shared",
+   "proj": "up_proj",
+   "cos": 0.9918,
+   "norm_ratio": 0.9999,
+   "rel_err": 0.1283,
+   "ok": true
+  },
+  {
+   "layer": 0,
+   "expert": 0,
+   "proj": "down_proj",
+   "cos": 0.9917,
+   "norm_ratio": 1.0015,
+   "rel_err": 0.125,
+   "ok": true,
+   "cos_shifted": -0.0006
+  },
+  {
+   "layer": 0,
+   "expert": 7,
+   "proj": "down_proj",
+   "cos": 0.9921,
+   "norm_ratio": 1.0015,
+   "rel_err": 0.1247,
+   "ok": true,
+   "cos_shifted": -0.0002
+  },
+  {
+   "layer": 0,
+   "expert": 511,
+   "proj": "down_proj",
+   "cos": 0.9926,
+   "norm_ratio": 1.0016,
+   "rel_err": 0.1243,
+   "ok": true,
+   "cos_shifted": 0.0001
+  },
+  {
+   "layer": 0,
+   "expert": "shared",
+   "proj": "down_proj",
+   "cos": 0.9916,
+   "norm_ratio": 0.9995,
+   "rel_err": 0.1295,
+   "ok": true
+  },
+  {
+   "layer": 3,
+   "expert": 0,
+   "proj": "gate_proj",
+   "cos": 0.9919,
+   "norm_ratio": 1.001,
+   "rel_err": 0.1257,
+   "ok": true,
+   "cos_shifted": -0.0007
+  },
+  {
+   "layer": 3,
+   "expert": 7,
+   "proj": "gate_proj",
+   "cos": 0.992,
+   "norm_ratio": 1.001,
+   "rel_err": 0.1252,
+   "ok": true,
+   "cos_shifted": 0.0012
+  },
+  {
+   "layer": 3,
+   "expert": 511,
+   "proj": "gate_proj",
+   "cos": 0.9921,
+   "norm_ratio": 1.0014,
+   "rel_err": 0.1252,
+   "ok": true,
+   "cos_shifted": 0.0012
+  },
+  {
+   "layer": 3,
+   "expert": "shared",
+   "proj": "gate_proj",
+   "cos": 0.9915,
+   "norm_ratio": 1.0004,
+   "rel_err": 0.1288,
+   "ok": true
+  },
+  {
+   "layer": 3,
+   "expert": 0,
+   "proj": "up_proj",
+   "cos": 0.9919,
+   "norm_ratio": 1.0013,
+   "rel_err": 0.1255,
+   "ok": true,
+   "cos_shifted": 0.0012
+  },
+  {
+   "layer": 3,
+   "expert": 7,
+   "proj": "up_proj",
+   "cos": 0.992,
+   "norm_ratio": 1.001,
+   "rel_err": 0.1252,
+   "ok": true,
+   "cos_shifted": 0.0001
+  },
+  {
+   "layer": 3,
+   "expert": 511,
+   "proj": "up_proj",
+   "cos": 0.9921,
+   "norm_ratio": 1.0014,
+   "rel_err": 0.125,
+   "ok": true,
+   "cos_shifted": -0.0006
+  },
+  {
+   "layer": 3,
+   "expert": "shared",
+   "proj": "up_proj",
+   "cos": 0.9917,
+   "norm_ratio": 0.9991,
+   "rel_err": 0.1291,
+   "ok": true
+  },
+  {
+   "layer": 3,
+   "expert": 0,
+   "proj": "down_proj",
+   "cos": 0.992,
+   "norm_ratio": 1.0006,
+   "rel_err": 0.1246,
+   "ok": true,
+   "cos_shifted": 0.0007
+  },
+  {
+   "layer": 3,
+   "expert": 7,
+   "proj": "down_proj",
+   "cos": 0.9919,
+   "norm_ratio": 1.0013,
+   "rel_err": 0.1247,
+   "ok": true,
+   "cos_shifted": -0.0001
+  },
+  {
+   "layer": 3,
+   "expert": 511,
+   "proj": "down_proj",
+   "cos": 0.9921,
+   "norm_ratio": 1.0011,
+   "rel_err": 0.1245,
+   "ok": true,
+   "cos_shifted": 0.001
+  },
+  {
+   "layer": 3,
+   "expert": "shared",
+   "proj": "down_proj",
+   "cos": 0.9914,
+   "norm_ratio": 1.0,
+   "rel_err": 0.1286,
+   "ok": true
+  },
+  {
+   "layer": 24,
+   "expert": 0,
+   "proj": "gate_proj",
+   "cos": 0.9922,
+   "norm_ratio": 1.0008,
+   "rel_err": 0.1245,
+   "ok": true,
+   "cos_shifted": 0.0002
+  },
+  {
+   "layer": 24,
+   "expert": 7,
+   "proj": "gate_proj",
+   "cos": 0.9922,
+   "norm_ratio": 1.0009,
+   "rel_err": 0.1245,
+   "ok": true,
+   "cos_shifted": 0.001
+  },
+  {
+   "layer": 24,
+   "expert": 511,
+   "proj": "gate_proj",
+   "cos": 0.992,
+   "norm_ratio": 1.0017,
+   "rel_err": 0.1248,
+   "ok": true,
+   "cos_shifted": 0.0001
+  },
+  {
+   "layer": 24,
+   "expert": "shared",
+   "proj": "gate_proj",
+   "cos": 0.9917,
+   "norm_ratio": 0.9984,
+   "rel_err": 0.1288,
+   "ok": true
+  },
+  {
+   "layer": 24,
+   "expert": 0,
+   "proj": "up_proj",
+   "cos": 0.9923,
+   "norm_ratio": 1.0008,
+   "rel_err": 0.1244,
+   "ok": true,
+   "cos_shifted": -0.0004
+  },
+  {
+   "layer": 24,
+   "expert": 7,
+   "proj": "up_proj",
+   "cos": 0.9923,
+   "norm_ratio": 1.0007,
+   "rel_err": 0.1244,
+   "ok": true,
+   "cos_shifted": -0.0003
+  },
+  {
+   "layer": 24,
+   "expert": 511,
+   "proj": "up_proj",
+   "cos": 0.992,
+   "norm_ratio": 1.0017,
+   "rel_err": 0.1248,
+   "ok": true,
+   "cos_shifted": -0.0002
+  },
+  {
+   "layer": 24,
+   "expert": "shared",
+   "proj": "up_proj",
+   "cos": 0.9915,
+   "norm_ratio": 0.9998,
+   "rel_err": 0.129,
+   "ok": true
+  },
+  {
+   "layer": 24,
+   "expert": 0,
+   "proj": "down_proj",
+   "cos": 0.9919,
+   "norm_ratio": 1.0013,
+   "rel_err": 0.1243,
+   "ok": true,
+   "cos_shifted": 0.0013
+  },
+  {
+   "layer": 24,
+   "expert": 7,
+   "proj": "down_proj",
+   "cos": 0.9922,
+   "norm_ratio": 1.0013,
+   "rel_err": 0.1244,
+   "ok": true,
+   "cos_shifted": 0.0001
+  },
+  {
+   "layer": 24,
+   "expert": 511,
+   "proj": "down_proj",
+   "cos": 0.9923,
+   "norm_ratio": 1.0014,
+   "rel_err": 0.1244,
+   "ok": true,
+   "cos_shifted": 0.0004
+  },
+  {
+   "layer": 24,
+   "expert": "shared",
+   "proj": "down_proj",
+   "cos": 0.9919,
+   "norm_ratio": 0.9985,
+   "rel_err": 0.1284,
+   "ok": true
+  },
+  {
+   "layer": 47,
+   "expert": 0,
+   "proj": "gate_proj",
+   "cos": 0.9917,
+   "norm_ratio": 1.0006,
+   "rel_err": 0.125,
+   "ok": true,
+   "cos_shifted": 0.0011
+  },
+  {
+   "layer": 47,
+   "expert": 7,
+   "proj": "gate_proj",
+   "cos": 0.9918,
+   "norm_ratio": 1.0011,
+   "rel_err": 0.1249,
+   "ok": true,
+   "cos_shifted": 0.0091
+  },
+  {
+   "layer": 47,
+   "expert": 511,
+   "proj": "gate_proj",
+   "cos": 0.9921,
+   "norm_ratio": 1.0016,
+   "rel_err": 0.1246,
+   "ok": true,
+   "cos_shifted": 0.0037
+  },
+  {
+   "layer": 47,
+   "expert": "shared",
+   "proj": "gate_proj",
+   "cos": 0.9916,
+   "norm_ratio": 0.9994,
+   "rel_err": 0.1297,
+   "ok": true
+  },
+  {
+   "layer": 47,
+   "expert": 0,
+   "proj": "up_proj",
+   "cos": 0.9918,
+   "norm_ratio": 1.001,
+   "rel_err": 0.1246,
+   "ok": true,
+   "cos_shifted": -0.0004
+  },
+  {
+   "layer": 47,
+   "expert": 7,
+   "proj": "up_proj",
+   "cos": 0.992,
+   "norm_ratio": 1.0013,
+   "rel_err": 0.1247,
+   "ok": true,
+   "cos_shifted": -0.0007
+  },
+  {
+   "layer": 47,
+   "expert": 511,
+   "proj": "up_proj",
+   "cos": 0.9921,
+   "norm_ratio": 1.0016,
+   "rel_err": 0.1246,
+   "ok": true,
+   "cos_shifted": -0.0002
+  },
+  {
+   "layer": 47,
+   "expert": "shared",
+   "proj": "up_proj",
+   "cos": 0.9916,
+   "norm_ratio": 0.9979,
+   "rel_err": 0.1296,
+   "ok": true
+  },
+  {
+   "layer": 47,
+   "expert": 0,
+   "proj": "down_proj",
+   "cos": 0.9921,
+   "norm_ratio": 1.0011,
+   "rel_err": 0.125,
+   "ok": true,
+   "cos_shifted": -0.0003
+  },
+  {
+   "layer": 47,
+   "expert": 7,
+   "proj": "down_proj",
+   "cos": 0.9919,
+   "norm_ratio": 1.0009,
+   "rel_err": 0.1247,
+   "ok": true,
+   "cos_shifted": -0.0009
+  },
+  {
+   "layer": 47,
+   "expert": 511,
+   "proj": "down_proj",
+   "cos": 0.9922,
+   "norm_ratio": 1.0015,
+   "rel_err": 0.1244,
+   "ok": true,
+   "cos_shifted": 0.0
+  },
+  {
+   "layer": 47,
+   "expert": "shared",
+   "proj": "down_proj",
+   "cos": 0.9912,
+   "norm_ratio": 0.9995,
+   "rel_err": 0.1318,
+   "ok": true
+  }
+ ],
+ "gscale_min": 2.3433140086126514e-05,
+ "gscale_max": 0.00044759115553461015,
+ "scale_byte_min": 68,
+ "scale_byte_max": 126,
+ "scale_value_min": 3.0,
+ "scale_value_max": 448.0,
+ "shared_source_dtype": {
+  "0": {
+   "gate_proj": "float8_e4m3fn",
+   "up_proj": "float8_e4m3fn",
+   "down_proj": "float8_e4m3fn"
+  },
+  "3": {
+   "gate_proj": "float8_e4m3fn",
+   "up_proj": "float8_e4m3fn",
+   "down_proj": "float8_e4m3fn"
+  },
+  "24": {
+   "gate_proj": "float8_e4m3fn",
+   "up_proj": "float8_e4m3fn",
+   "down_proj": "float8_e4m3fn"
+  },
+  "47": {
+   "gate_proj": "float8_e4m3fn",
+   "up_proj": "float8_e4m3fn",
+   "down_proj": "float8_e4m3fn"
+  }
+ },
+ "layer0_pack_peak_rss_gib": 4.32,
+ "layer0_table_gib": 1.32,
+ "layer0_pack_error": null,
+ "ok": true
+}

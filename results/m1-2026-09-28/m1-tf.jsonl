@@ -1,0 +1,11 @@
+{"bench": "tf", "rows": 1, "ms": 0.2353, "ms_min": 0.2092, "ms_max": 0.2485, "plan": "decode"}
+{"bench": "tf", "rows": 2, "ms": 0.3849, "ms_min": 0.3735, "ms_max": 0.396, "plan": "decode"}
+{"bench": "tf", "rows": 4, "ms": 0.6835, "ms_min": 0.6452, "ms_max": 0.6963, "plan": "decode"}
+{"bench": "tf", "rows": 8, "ms": 1.1986, "ms_min": 1.1775, "ms_max": 1.2239, "plan": "decode"}
+{"bench": "tf", "rows": 16, "ms": 4.6121, "ms_min": 2.2213, "ms_max": 4.9629, "plan": "decode"}
+{"bench": "tf", "rows": 32, "ms": 6.4339, "ms_min": 4.1646, "ms_max": 6.5221, "plan": "decode"}
+{"bench": "tf", "rows": 64, "ms": 11.2481, "ms_min": 6.0141, "ms_max": 14.259, "plan": "decode"}
+{"bench": "tf", "rows": 128, "ms": 15.4929, "ms_min": 7.425, "ms_max": 18.8049, "plan": "decode"}
+{"bench": "tf", "rows": 512, "ms": 14.1519, "ms_min": 6.7699, "ms_max": 14.925, "plan": "prefill"}
+{"bench": "tf", "rows": 2048, "ms": 15.1494, "ms_min": 7.7459, "ms_max": 15.6196, "plan": "prefill"}
+{"bench": "tf", "rows": 8192, "ms": 26.9311, "ms_min": 15.7487, "ms_max": 28.8216, "plan": "prefill"}

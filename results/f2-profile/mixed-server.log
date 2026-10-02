@@ -1,0 +1,2 @@
+ERROR: The --sample switch is not supported by the launch command after NVIDIA Nsight Systems v2021.5.
+The sample switch can be set on the profile and start commands.

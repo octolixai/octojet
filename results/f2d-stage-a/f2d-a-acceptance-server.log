@@ -1,0 +1,31 @@
+[tensorfold] loading f1: Qwen3.8 Flash Next (qwen4_exp) on CUDA
+[tensorfold] CUDA rank 0 startup estimate 80.16 GiB within 104.86 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151
+[octojet] packed tables: 48 of 48 from cache in 34.3 s
+[tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 2 streams of 262144 prompt/reply tokens (4799 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 8.0s; 0 decode graphs captured; prompt kernels warmed in 3.5s
+[tensorfold] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 262144; loaded in 66.0s)
+[octojet] prefix reuse miss (busy) 71444 tokens
+[octojet] prefix reuse exact 71444/71444 tokens
+[octojet] prefix reuse exact 14/14 tokens
+[octojet] prefix reuse exact 14/14 tokens
+[octojet] prefix reuse exact 14/14 tokens
+[octojet] prefix reuse exact 14/14 tokens
+[octojet] prefix reuse exact 14/14 tokens
+[octojet] prefix reuse exact 31/31 tokens
+[octojet] prefix reuse exact 31/31 tokens
+[octojet] prefix reuse exact 31/31 tokens
+[octojet] prefix reuse exact 31/31 tokens
+[octojet] prefix reuse exact 31/31 tokens
+[octojet] prefix reuse exact 14/14 tokens
+[octojet] prefix reuse exact 14/14 tokens
+[octojet] prefix reuse exact 14/14 tokens
+[octojet] prefix reuse exact 14/14 tokens
+[octojet] prefix reuse exact 14/14 tokens
+[octojet] prefix reuse exact 31/31 tokens
+[octojet] prefix reuse exact 31/31 tokens
+[octojet] prefix reuse exact 31/31 tokens
+[octojet] prefix reuse exact 31/31 tokens
+[octojet] prefix reuse exact 31/31 tokens
+[octojet] prefix reuse exact 27/27 tokens
+[octojet] prefix reuse exact 28/28 tokens
+[octojet] prefix reuse exact 27/27 tokens
+[octojet] prefix reuse exact 28/28 tokens

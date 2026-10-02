@@ -1,0 +1,6 @@
+{"check":"toolkit","device":"NVIDIA GB10","cc":"12.1","sms":48,"runtime":13030,"driver":13030,"fp4":true,"fp8":true,"cond":true}
+{"check":"peak","format":"bf16","tflops":118.3,"ms":1.743}
+{"check":"peak","format":"fp8","tflops":236.6,"ms":1.743}
+{"check":"peak","format":"fp4bs","tflops":473.0,"ms":1.743}
+{"check":"layout","ok":true,"regs_ok":true,"a_found":true,"b_found":true,"combined_ok":true,"a_sel":0,"a_pat":0,"b_sel":0}
+{"check":"cond_graph","ok":true,"iters":1000,"us_per_iter":3.54}

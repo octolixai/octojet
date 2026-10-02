@@ -1,0 +1,52 @@
+[
+ {
+  "label": "cold",
+  "manifest": "~/tensorfold/octojet-manifests/cP.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 64,
+  "expect_reuse": "none",
+  "expect_cached": 0,
+  "expect_reply_equal": null
+ },
+ {
+  "label": "exact1",
+  "manifest": "~/tensorfold/octojet-manifests/cP.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 64,
+  "expect_reuse": "exact",
+  "expect_cached": 71444,
+  "expect_reply_equal": "cold"
+ },
+ {
+  "label": "exact2",
+  "manifest": "~/tensorfold/octojet-manifests/cP.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 64,
+  "expect_reuse": "exact",
+  "expect_cached": 71444,
+  "expect_reply_equal": "cold"
+ },
+ {
+  "label": "exact3",
+  "manifest": "~/tensorfold/octojet-manifests/cP.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 64,
+  "expect_reuse": "exact",
+  "expect_cached": 71444,
+  "expect_reply_equal": "cold"
+ },
+ {
+  "label": "exact4",
+  "manifest": "~/tensorfold/octojet-manifests/cP.json",
+  "arm": "clean",
+  "draft": "on",
+  "max_tokens": 64,
+  "expect_reuse": "exact",
+  "expect_cached": 71444,
+  "expect_reply_equal": "cold"
+ }
+]

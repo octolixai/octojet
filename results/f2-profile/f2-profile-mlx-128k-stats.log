@@ -1,0 +1,11 @@
+Generating SQLite file /tf/octojet-profiles/f2-profile-mlx-128k.sqlite from /tf/octojet-profiles/f2-profile-mlx-128k.nsys-rep
+Processing [/tf/octojet-profiles/f2-profile-mlx-128k.sqlite] with [/usr/local/cuda-13.3/NsightSystems-cli-2026.3.1/target-linux-sbsa-armv8/reports/cuda_gpu_kern_sum.py] to [f2-profile-mlx-128k_cuda_gpu_kern_sum.csv]... PROCESSED (EMPTY RESULTS)
+
+SKIPPED: /tf/octojet-profiles/f2-profile-mlx-128k.sqlite does not contain CUDA kernel data.
+
+Processing [/tf/octojet-profiles/f2-profile-mlx-128k.sqlite] with [/usr/local/cuda-13.3/NsightSystems-cli-2026.3.1/target-linux-sbsa-armv8/reports/cuda_api_sum.py] to [f2-profile-mlx-128k_cuda_api_sum.csv]... PROCESSED
+
+Processing [/tf/octojet-profiles/f2-profile-mlx-128k.sqlite] with [/usr/local/cuda-13.3/NsightSystems-cli-2026.3.1/target-linux-sbsa-armv8/reports/osrt_sum.py] to [f2-profile-mlx-128k_osrt_sum.csv]... PROCESSED
+
+Processing [/tf/octojet-profiles/f2-profile-mlx-128k.sqlite] with [/usr/local/cuda-13.3/NsightSystems-cli-2026.3.1/target-linux-sbsa-armv8/reports/cuda_gpu_mem_time_sum.py] to [f2-profile-mlx-128k_cuda_gpu_mem_time_sum.csv]... PROCESSED
+

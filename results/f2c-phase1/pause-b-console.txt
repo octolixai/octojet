@@ -1,0 +1,27 @@
+dry-run arm=clean rep=1 draft=on fields=- timing_file=-
+dry-run arm=profile rep=1 draft=on fields=profile,timing timing_file=~/octojet-runs/f2c-phase1/f2c-phase1-S3-128k.jsonl-profile-1-timing.json
+dry-run arm=clean rep=1 draft=on fields=- timing_file=-
+dry-run arm=clean rep=1 draft=on fields=- timing_file=-
+dry-run arm=clean rep=2 draft=on fields=- timing_file=-
+dry-run arm=timing rep=1 draft=on fields=timing timing_file=~/octojet-runs/f2c-phase1/f2c-phase1-S4-128k.jsonl-timing-1-timing.json
+dry-run arm=clean rep=1 draft=off fields=draft timing_file=-
+dry-run arm=clean rep=2 draft=off fields=draft timing_file=-
+dry-run arm=clean rep=1 draft=on fields=- timing_file=-
+dry-run arm=clean rep=2 draft=on fields=- timing_file=-
+dry-run arm=clean rep=1 draft=on fields=- timing_file=-
+2026-09-30T12:21:59Z dry-run OK: every planned request parses and no artifact collides
+2026-09-30T12:21:59Z PAUSE B START: stopping oj-serve and the 27B
+2026-09-30T12:22:02Z S3: page cache dropped
+               total        used        free      shared  buff/cache   available
+Mem:             121           3         118           0           0         117
+Swap:             15           1          14
+2026-09-30T12:22:02Z S3: process start
+2026-09-30T12:23:09Z S3: healthy after 67s
+[tensorfold] CUDA rank 0 startup estimate 80.16 GiB within 104.19 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262151
+[tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 2 streams of 262144 prompt/reply tokens (4799 MiB a stream), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 7.1s; 0 decode graphs captured; prompt kernels warmed in 6.0s
+2026-09-30T12:23:09Z S3: selector warm-up (140k)
+{"label": "S3-warmup", "arm": "clean", "rep": 1, "untimed": false, "draft": true, "prompt_tokens": 140000, "prompt_sha_ok": true, "ttft_s": 87.37584687792696, "received_at": 1595786.126168869, "queued_at": 1595786.127523544, "admitted_at": 1595786.128253978, "first_token_at": 1595873.502015747, "client_send_at": 1595786.100267767, "client_first_sse_at": 1595873.502631253, "client_wall_s": 87.45199439697899, "cached": 0, "profiler_rc": null, "notes": null, "timing_file": null, "usage": {"prompt_tokens": 140000, "completion_tokens": 2, "total_tokens": 140002}}
+{"label": "S3-128k", "arm": "profile", "rep": 1, "untimed": false, "draft": true, "prompt_tokens": null, "prompt_sha_ok": false, "ttft_s": null, "received_at": null, "queued_at": null, "admitted_at": null, "first_token_at": null, "client_send_at": null, "client_first_sse_at": null, "client_wall_s": null, "cached": null, "profiler_rc": null, "notes": null, "timing_file": null, "usage": null, "error": "RuntimeError: the stream ended without a final chunk carrying usage/stats"}
+2026-09-30T12:25:57Z RESTORE (exit 1): starting oj-serve and the 27B
+2026-09-30T12:26:52Z PRODUCTION RESTORED
+PAUSE_B_EXIT=1

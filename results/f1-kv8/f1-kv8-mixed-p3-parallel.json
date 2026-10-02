@@ -1,0 +1,25 @@
+{
+ "prompts": [
+  {
+   "solo_len_chars": 847,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 865,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  },
+  {
+   "solo_len_chars": 863,
+   "concurrent_equal": true,
+   "concurrent2_equal": true,
+   "first_diff_index": -1
+  }
+ ],
+ "all_equal": true,
+ "wall_solo_s": 9.5,
+ "wall_concurrent_s": 7.59
+}

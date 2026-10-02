@@ -1,0 +1,57 @@
+{
+ "caller_timeout_s": 30.0,
+ "prompt_tokens": 71444,
+ "sources": [
+  "results/f2d-stage-a/f2d-a-stream-1.jsonl",
+  "results/f2d-stage-a/f2d-a-stream-2.jsonl",
+  "results/f2d-stage-a/f2d-a-nostream-1.jsonl",
+  "results/f2d-stage-a/f2d-a-nostream-2.jsonl"
+ ],
+ "problems": [],
+ "rules": {
+  "exact_reuse": {
+   "ok": true,
+   "detail": "16 exact rows, each cached 71444"
+  },
+  "exact_ttft": {
+   "ok": true,
+   "detail": {
+    "max_s": 0.02829487598501146,
+    "limit_s": 2.0
+   }
+  },
+  "reply_equal": {
+   "ok": true,
+   "detail": "every exact reply equals its repetition's cold reply"
+  },
+  "cold_spread": {
+   "ok": true,
+   "detail": {
+    "stream": 0.0492893595412055,
+    "nostream": 0.022591858602630806,
+    "limit": 0.05
+   }
+  },
+  "r_ref": {
+   "ok": true,
+   "detail": {
+    "tokens_per_s": 60.00882373447416,
+    "from": "two non-streamed cold rows"
+   }
+  },
+  "latency": {
+   "ok": true,
+   "detail": "every non-streamed exact total within min(ttft + 64/r_ref + 0.1 s, T/2)"
+  },
+  "cold_within_timeout": {
+   "ok": false,
+   "informational": true,
+   "detail": [
+    "results/f2d-stage-a/f2d-a-nostream-1.jsonl:1: cold total 39.132 s > T 30.0 s",
+    "results/f2d-stage-a/f2d-a-nostream-2.jsonl:1: cold total 40.027 s > T 30.0 s"
+   ]
+  }
+ },
+ "r_ref": 60.00882373447416,
+ "verdict": "PASS"
+}

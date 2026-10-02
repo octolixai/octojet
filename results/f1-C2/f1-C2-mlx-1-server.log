@@ -1,0 +1,4 @@
+[tensorfold] loading f1: Qwen3.8 Flash Next (qwen4_exp) on CUDA
+[tensorfold] CUDA rank 0 startup estimate 87.49 GiB within 105.12 GiB; native 262144, allocated prompt/reply window 160689, cache slots 160696
+[tensorfold] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 30%; 160689-token prompt/reply window; 160696-token cache; n-gram tables read in 6.6s; 21 decode graphs captured; prompt kernels warmed in 0.9s
+[tensorfold] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 160689; loaded in 152.4s)
