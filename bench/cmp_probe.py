@@ -100,7 +100,9 @@ def cmd_gap(a):
     edges = [sent] + window + [first or end]
     gaps = [y - x for x, y in zip(edges, edges[1:])]
     res = {"b_prompt_tokens": usage.get("prompt_tokens"), "b_ttft_s": round((first or end) - sent, 3),
-           "a_tokens_during_b": len(window), "a_max_gap_s": round(max(gaps), 3) if gaps else None, **b_info}
+           "a_tokens_during_b": len(window), "a_max_gap_s": round(max(gaps), 3) if gaps else None,
+           "a_median_gap_s": round(sorted(gaps)[len(gaps) // 2], 3) if gaps else None,
+           "a_gaps_s": [round(g, 3) for g in gaps], "b_sent_epoch": round(sent, 4), **b_info}
     if len(times) < 8:
         res["error"] = "stream A did not start decoding"
     print(json.dumps(res))

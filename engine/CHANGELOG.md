@@ -18,7 +18,13 @@ release notes, kept as they were; their commands read `tensorfold ...`, which is
   the prompt's last message starts (`<|im_start|>`), so the next turn of a conversation, or a variant that changes
   only its last message, resumes there instead of up to a chunk earlier. Idea from TensorFold 0.6.0 (the next
   thinking turn resumes from the kept prompt); Octojet's own implementation.
-- Replies are unchanged by all three: drafted replies equal serial ones and concurrent replies equal solo runs.
+- **Live replies keep streaming while a long prompt fills.** Beside decoding streams, a prompt fills in 1,024-row
+  chunks (`OCTOJET_LIVE_PREFILL_ROWS`; full-size chunks when it fills alone): while a 128k prompt arrives, a live
+  reply's typical pause went from 1.2-1.4 s to 0.7-0.85 s and its longest from 2.6-3.2 s to 1.5-1.9 s (three Spark
+  runs, production settings with images on). Its chunks also run on their own CUDA stream
+  (`OCTOJET_FILL_STREAM`), so decode steps never queue behind a chunk and the next chunk is queued while one runs.
+  `OCTOJET_ROUND_LOG=<file>` records each round's chunk and decode seconds for measurement.
+- Replies are unchanged by all of these: drafted replies equal serial ones and concurrent replies equal solo runs.
 
 ## 0.1.0 (October 2026)
 

@@ -15,7 +15,7 @@ from tensorfold.cuda.sampling import sample_rows
 from tensorfold.engine.exact_sampling import MARGIN, Sampling, choose_rows
 
 from . import CONFIDENCE, DEPTH
-from .forward import commit, forward
+from .forward import commit, forward, prestage
 from .state import CAND, Buffers, State
 from .mtp import mtp_forward
 from .weights import Weights
@@ -311,12 +311,26 @@ def take_checkpoint(e: Engine, end: int, tail: torch.Tensor, use_mtp: bool) -> N
         TIMER.end(_t)
 
 
+def next_chunk_end(at: int, total: int, rows: int, cuts=()) -> int:
+    """Where the chunk starting at ``at`` ends: the next absolute multiple of ``rows`` (or the prompt's end), never
+    past a cut. With ``rows`` the prompt chunk size this is exactly ``chunk_starts``' chunking; a smaller ``rows`` that
+    divides it (F8: chunks while other streams decode) still ends a chunk on every multiple of the full size."""
+
+    end = min(total, (at // rows + 1) * rows)
+    inside = [int(c) for c in cuts if at < int(c) < end]
+    return min(inside) if inside else end
+
+
 def prefill_steps(e: Engine, prompt: Sequence[int], sampling: Sampling | None, *, mtp: bool = True,
-                  resume: dict | None = None, vision=None, checkpoints: Sequence[int] | None = None):
+                  resume: dict | None = None, vision=None, checkpoints: Sequence[int] | None = None,
+                  live_rows=None):
     """``prefill`` one chunk at a time: a generator that yields after each chunk's commit and returns the first token.
     The concurrent decoder runs decode rounds between the yields (``MultiDecoder``'s prompts inside rounds); between
     two yields nothing is carried in the shared prompt buffers (every chunk restages them), so rounds or another
-    admission may use them, and the chunks are the same kernels on the same rows as ``prefill``'s."""
+    admission may use them, and the chunks are the same kernels on the same rows as ``prefill``'s.
+
+    ``live_rows`` (F8): called before each chunk; a row count (dividing the chunk size) while other streams decode, so
+    their pause between tokens is one short chunk, or None for a full chunk. A row's bits never depend on its chunk."""
 
     with torch.no_grad():
         if not prompt:
@@ -352,11 +366,13 @@ def prefill_steps(e: Engine, prompt: Sequence[int], sampling: Sampling | None, *
         if vision is not None:
             image_rows = torch.tensor(vision.rows, dtype=torch.int64, device=vision.features.device)
             positions = vision.positions.t().contiguous()            # [prompt, 3] int32
-    starts = chunk_starts(begin, len(prompt), e.prefill_rows, cuts=wanted)
-    for i, start in enumerate(starts):
+    start = begin
+    while start < len(prompt):
+        rows = (live_rows() if live_rows is not None else None) or e.prefill_rows
+        end = next_chunk_end(start, len(prompt), rows, cuts=wanted)
         with torch.no_grad():
             try:
-                chunk = list(prompt[start:starts[i + 1] if i + 1 < len(starts) else len(prompt)])
+                chunk = list(prompt[start:end])
                 R = len(chunk)
                 chunk_index = start // e.prefill_rows            # (a turn-start cut shares its chunk's index)
                 TIMER.chunk, TIMER.rows, TIMER.pos = chunk_index, R, start
@@ -395,7 +411,13 @@ def prefill_steps(e: Engine, prompt: Sequence[int], sampling: Sampling | None, *
             finally:
                 pb.rope_rows = None                      # the shared prompt buffers serve text rows next
         if not final:
+            # read the next chunk's table rows now, while the GPU still runs this one: the round that runs before it
+            # waits for the GPU, and these host reads would otherwise run with the GPU idle (F8; same bytes)
+            nrows = (live_rows() if live_rows is not None else None) or e.prefill_rows
+            nend = next_chunk_end(start + R, len(prompt), nrows, cuts=wanted)
+            prestage(w, pb, st, prompt[start + R:nend])
             yield start + R                              # rows committed; a round may run before the next chunk
+        start += R
     with torch.no_grad():
         if vision is not None:                           # decode continues at the image prompt's rotary offset
             st.set_rope_delta(vision.rope_delta)

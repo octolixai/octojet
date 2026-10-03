@@ -4,7 +4,7 @@
   python3 docs/images/make_charts.py        # writes docs/images/*.png
 
 Every number below is copied from docs/benchmarks.md (the single source); change them there first.
-Versions: Octojet 542715f (speed, run 3) and 78c1215 (accuracy, run 2); TensorFold v0.6.2 (56e2e3ec) for speed and v0.6.0 for accuracy with local-inference-lab NVFP4 @ 7c4f1bc1 and
+Versions: Octojet 3f49925 (speed, run 4) and 78c1215 (accuracy, run 2); TensorFold v0.6.2 (56e2e3ec) for speed and v0.6.0 for accuracy with local-inference-lab NVFP4 @ 7c4f1bc1 and
 RadixArk NVFP4 @ 7b719225; one DGX Spark (GB10), int8 KV, --parallel 3.
 """
 from pathlib import Path
@@ -15,27 +15,29 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 OUT = Path(__file__).resolve().parent
-WHO = ["Octojet", "TensorFold 0.6.2 + local-inference-lab", "TensorFold 0.6.2 + RadixArk"]
-COLOR = ["#1d5fa8", "#c2683f", "#e0b39b"]
+WHO = ["Octojet", "TensorFold 0.6.2 + MLX 4-bit", "TensorFold 0.6.2 + local-inference-lab", "TensorFold 0.6.2 + RadixArk"]
+COLOR = ["#1d5fa8", "#6b7f3a", "#c2683f", "#e0b39b"]
 INK, MUTED, RULE = "#16202c", "#5b6876", "#d9e0e7"
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10, "text.color": INK, "axes.labelcolor": INK,
                      "xtick.color": MUTED, "ytick.color": INK, "axes.edgecolor": RULE})
 
-# run 3, 2 Oct 2026 (docs/benchmarks.md "Head-to-head against TensorFold v0.6.2"; upstream with --precision full)
+# run 4, 3 Oct 2026 (docs/benchmarks.md "all three published checkpoints"; NVFP4 configs with --precision full)
 SPEED = [
-    ("Cold 128k-token prompt, first token", "s", True, [68.8, 84.7, 95.0]),
-    ("Cold 210k-token prompt, first token", "s", True, [124.0, 146.2, 164.4]),
-    ("Prompt sharing 69k of 71k tokens with an earlier one", "s", True, [3.2, 45.1, 49.2]),
-    ("Agent follow-up step (+5k tokens), median", "s", True, [11.9, 14.3, 23.5]),
-    ("Decode, chat, sampled", "tok/s", False, [62.9, 41.7, 31.4]),
-    ("Decode, code, sampled", "tok/s", False, [64.3, 50.1, 39.7]),
-    ("Decode, chat, greedy", "tok/s", False, [88.6, 39.9, 34.7]),
-    ("Decode, code, greedy", "tok/s", False, [54.9, 51.0, 42.9]),
+    ("Cold 128k-token prompt, first token", "s", True, [67.6, 57.1, 84.7, 95.5]),
+    ("Cold 210k-token prompt, first token", "s", True, [112.7, 105.6, 146.0, 164.5]),
+    ("Prompt sharing 69k of 71k tokens with an earlier one", "s", True, [3.3, 29.5, 45.0, 49.3]),
+    ("A resend while another 128k prompt fills", "s", True, [0.77, 3.83, 2.66, 3.47]),
+    ("Agent follow-up step (+5k tokens), median", "s", True, [12.1, 12.5, 14.3, 23.3]),
+    ("Typical pause of a live reply while a 128k prompt arrives", "s", True, [0.70, 1.09, 1.43, 1.61]),
+    ("Decode, chat, sampled", "tok/s", False, [62.0, 56.3, 41.4, 31.2]),
+    ("Decode, code, sampled", "tok/s", False, [64.3, 70.5, 49.8, 39.3]),
+    ("Decode, chat, greedy", "tok/s", False, [88.2, 60.2, 39.8, 34.7]),
+    ("Decode, code, greedy", "tok/s", False, [54.5, 63.8, 50.9, 42.9]),
 ]
 
 
 def speed_chart():
-    fig, axes = plt.subplots(4, 2, figsize=(11, 9.2))
+    fig, axes = plt.subplots(5, 2, figsize=(11, 12.5))
     for ax, (title, unit, lower, vals) in zip(axes.flat, SPEED):
         best = min(vals[1:]) if lower else max(vals[1:])
         ratio = best / vals[0] if lower else vals[0] / best
@@ -45,15 +47,16 @@ def speed_chart():
             ax.text(v + max(vals) * 0.015, yi, f"{v:g} {unit}", va="center", fontsize=9, color=INK)
         ax.set_xlim(0, max(vals) * 1.28)
         ax.set_yticks([])
-        ax.set_title(f"{title}\n{'lower' if lower else 'higher'} is better · Octojet {ratio:.2f}x the best upstream",
+        ax.set_title(f"{title}\n{'lower' if lower else 'higher'} is better · Octojet {ratio:.2f}x the best upstream"
+                     + ("" if ratio >= 1 else " (upstream leads)"),
                      fontsize=10, loc="left", color=INK)
         for side in ("top", "right", "left"):
             ax.spines[side].set_visible(False)
         ax.tick_params(axis="x", labelsize=8)
     handles = [plt.Rectangle((0, 0), 1, 1, color=c) for c in COLOR]
-    fig.legend(handles, WHO, loc="upper center", ncol=3, frameon=False, fontsize=10, bbox_to_anchor=(0.5, 1.0))
+    fig.legend(handles, WHO, loc="upper center", ncol=2, frameon=False, fontsize=10, bbox_to_anchor=(0.5, 1.0))
     fig.text(0.5, 0.005, "One DGX Spark (GB10), int8 KV cache, 3 streams, text only, same prompts; client-side times. "
-             "TensorFold v0.6.2 (56e2e3ec, --precision full); local-inference-lab @ 7c4f1bc1; RadixArk @ 7b719225. Run 3, 2 Oct 2026.",
+             "TensorFold v0.6.2 (56e2e3ec); Vontra MLX 4-bit @ 2b170fa6; NVFP4 with --precision full: local-inference-lab @ 7c4f1bc1, RadixArk @ 7b719225. Run 4, 3 Oct 2026.",
              ha="center", fontsize=8, color=MUTED, wrap=True)
     fig.tight_layout(rect=(0, 0.03, 1, 0.96))
     fig.savefig(OUT / "speed-vs-upstream.png", dpi=150, facecolor="white")

@@ -34,6 +34,51 @@ How to reproduce: `bench/spark/compare-upstream.sh` (run 1: full mode, accuracy 
 `bench/agent_bench.py`, accuracy via `bench/acc_eval.py` + `bench/run_humaneval.sh`. Details and notes:
 `results/2026-10-01-compare-upstream.md`.
 
+## Head-to-head against TensorFold v0.6.2 on all three published checkpoints (run 4, 3 Oct 2026, ~17:52-18:45 UTC)
+
+Octojet 3f49925 (F8: 1,024-row prompt chunks while other streams decode, prompt chunks on their own CUDA stream; every
+token identical to earlier builds) against TensorFold v0.6.2 (56e2e3ec) on `Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` @
+2b170fa6 (the checkpoint of MiaAI-Lab's single-Spark TensorFold recipe, whose page reports 63.6 tok/s prose decode on
+TensorFold v0.6.1) and, with `--precision full`, on the two NVFP4 checkpoints. Same settings as the other runs (int8 KV,
+`--parallel 3`, text only, GPU exclusive, client-side timing); accuracy not rerun.
+
+| Name in tables | Engine | Checkpoint |
+|---|---|---|
+| Octojet | Octojet at 3f49925 (run 4) | Octojet mixed NVFP4 as served in production (routed experts from `RadixArk/Qwen3.8-Flash-Next-NVFP4` @ 7b719225, everything else from `Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` @ 2b170fa6) |
+| TF 0.6.2 + MLX 4-bit | TensorFold v0.6.2 (56e2e3ec), the latest release on 3 Oct 2026 | `Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` @ 2b170fa6, the checkpoint of MiaAI-Lab's single-Spark TensorFold recipe |
+| TF 0.6.2 + lil | TensorFold v0.6.2, `--precision full` | `local-inference-lab/Qwen3.8-Flash-Next-NVFP4` @ 7c4f1bc1 |
+| TF 0.6.2 + RadixArk | TensorFold v0.6.2, `--precision full` | `RadixArk/Qwen3.8-Flash-Next-NVFP4` @ 7b719225, as published |
+
+| Measure | Octojet | TF 0.6.2 + MLX 4-bit | TF 0.6.2 + lil | TF 0.6.2 + RadixArk |
+|---|---:|---:|---:|---:|
+| Cold 32k-token prompt, first token | 28.3 * | 12.5 | 19.6 | 22.5 |
+| Cold 128k-token prompt, first token | 67.6 | 57.1 | 84.7 | 95.5 |
+| Cold 210k-token prompt, first token | 112.7 | 105.6 | 146.0 | 164.5 |
+| Cold 71k-token prompt, first token | 35.3 | 30.8 | 44.9 | 51.1 |
+| Prompt sharing 69k of those 71k tokens | 3.3 | 29.5 | 45.0 | 49.3 |
+| The 71k prompt resent | 0.13 | 0.19 | 0.20 | 0.21 |
+| Decode, code prompt, temperature 1 (tok/s) | 64.3 | 70.5 | 49.8 | 39.3 |
+| Decode, chat prompt, temperature 1 (tok/s) | 62.0 | 56.3 | 41.4 | 31.2 |
+| Decode, code prompt, greedy (tok/s) | 54.5 | 63.8 | 50.9 | 42.9 |
+| Decode, chat prompt, greedy (tok/s) | 88.2 | 60.2 | 39.8 | 34.7 |
+| Agent: 80k-token first turn, first token | 52.0 | 47.0 | 67.4 | 74.8 |
+| Agent: +5k-token follow-up, first token (median of 3) | 4.46 | 4.12 | 5.27 | 6.80 |
+| Agent: +5k-token follow-up, whole step (median of 3) | 12.1 | 12.5 | 14.3 | 23.3 |
+| A short prompt sent while a cold 128k prompt fills, first token | 3.27 | 2.85 | 3.66 | 4.38 |
+| A resend sent while a cold 128k prompt fills, first token | 0.77 | 3.83 | 2.66 | 3.47 |
+| Longest pause of a live reply while a 128k prompt arrives | 1.35 | 1.29 | 1.61 | 1.79 |
+| Typical pause of a live reply while a 128k prompt arrives (median gap) | 0.70 | 1.09 | 1.43 | 1.61 |
+| That 128k prompt's first token while the reply streams | 90.2 | 70.7 | 91.8 | 102.4 |
+| Startup memory estimate (GiB) | 87.2 | 84.3 | 81.2 | 97.4 |
+| Context windows | 3 × 262,144 reserved | up to 3 × 262,144 | up to 3 × 262,144 | up to 3 × 262,144 |
+
+\* Octojet's first long prompt after a server start pays a one-time cost (13-15 s here); its cold 32k prompt took
+15.6-18.2 s in every other run. TensorFold warms its prompt kernels at startup.
+
+Reading: TensorFold on the MLX 4-bit checkpoint is the fastest upstream setup, ahead of Octojet on cold prompts
+(7-18%), code decode (9-15%) and memory (3 GiB); Octojet leads on prompts that repeat or share a prefix (9x on the
+variant, 3.5x on a resend during a fill), on chat decode, and on how smoothly live replies stream during a fill.
+
 ## Head-to-head against TensorFold v0.6.2 (run 3, 2 Oct 2026, ~17:10-18:25 UTC)
 
 Octojet 542715f (branch f7: requests admitted while a prompt fills, forks beside a decoding stream, turn-start

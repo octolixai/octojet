@@ -15,6 +15,8 @@ rows run; every chunk is still its prompt's own ``prefill_steps`` chunk, so no s
 
 from __future__ import annotations
 
+import json
+import os
 import sys
 import time
 
@@ -44,6 +46,36 @@ def _handoff(m: Match | None) -> dict | None:
         return None
     resume, m.resume = m.resume, None
     return resume
+
+
+LIVE_PREFILL_ROWS = 1024    # F8: a prompt's chunk rows while other streams decode (their pause is one such chunk)
+
+
+def live_prefill_rows(rows: int) -> int | None:
+    """Chunk rows for a prompt that fills while other streams decode: OCTOJET_LIVE_PREFILL_ROWS (0 turns it off), else
+    1,024; used only when it is a multiple of 256 that divides the full chunk size and is smaller than it, so every
+    full-size chunk end (where checkpoints are taken) stays a chunk end."""
+
+    value = os.environ.get("OCTOJET_LIVE_PREFILL_ROWS", "").strip()
+    small = int(value) if value else LIVE_PREFILL_ROWS
+    if small <= 0 or small >= rows or small % 256 or rows % small:
+        return None
+    return small
+
+
+FILL_STREAM = os.environ.get("OCTOJET_FILL_STREAM", "1") != "0"
+FILL_AHEAD = 2              # prompt chunks queued on the fill stream at most
+
+
+ROUND_LOG = os.environ.get("OCTOJET_ROUND_LOG")   # a JSONL path: one line a round (fill / decode seconds, prompt positions)
+
+
+def _round_log(row: dict) -> None:
+    try:
+        with open(ROUND_LOG, "a") as f:
+            f.write(json.dumps(row) + "\n")
+    except OSError:
+        pass
 
 
 class _Fill:
@@ -81,6 +113,11 @@ class MultiDecoder:
         self.buf = Buffers(w, rows, capacity)
         self.mbuf = Buffers(w, rows, capacity) if w.mtp is not None else None
         self.pbuf = Buffers(w, prefill_rows, capacity, prefill=True)
+        self.live_prefill_rows = live_prefill_rows(self.pbuf.rows)   # F8: shorter chunks while streams decode
+        # F8: beside decoding streams a prompt's chunks run on their own CUDA stream, so decode steps never wait behind
+        # a chunk and the next chunk is queued while one runs (at most FILL_AHEAD in flight)
+        self.fill_stream = torch.cuda.Stream() if FILL_STREAM and torch.cuda.is_available() else None
+        self.fill_events: list = []
         self.free = [State(w, capacity, depth + 1, kv_dtype) for _ in range(slots)]   # sized by the startup admission
         if prefix_checkpoints < 0:
             raise ValueError(f"--prefix-checkpoints is a count of 0 or more, not {prefix_checkpoints}")
@@ -308,8 +345,11 @@ class MultiDecoder:
                 first = exact_hit(e, m.entry, s.sampling)
             elif defer:                                  # the rounds fill it; its slot is busy from now on
                 e.inherited = inherit
+                small = getattr(self, "live_prefill_rows", None)
+                live = (lambda: small if any(not x.done for x in self.streams.values()) else None) if small else None
                 steps = prefill_steps(e, s.prompt, s.sampling, mtp=mtp, resume=_handoff(m),
-                                      **({"vision": encoded} if image else {}), **({"checkpoints": take} if take else {}))
+                                      **({"vision": encoded} if image else {}), **({"checkpoints": take} if take else {}),
+                                      **({"live_rows": live} if live else {}))
                 s.cached = m.cached if m is not None else 0
                 s.reuse = m.kind if m is not None else None
                 s.sid, s.st = self.next_id, st
@@ -322,6 +362,7 @@ class MultiDecoder:
             else:
                 # the text call is unchanged; only an image prompt hands prefill its encoded features, and a prompt
                 # with checkpoints to take their positions
+                self._join_fill_stream()                 # the shared prompt buffers: no chunk still reads them
                 e.inherited = inherit
                 first = prefill(e, s.prompt, s.sampling, mtp=mtp, resume=_handoff(m),
                                 **({"vision": encoded} if image else {}), **({"checkpoints": take} if take else {}))
@@ -374,9 +415,46 @@ class MultiDecoder:
         if all(f is not st for f in self.free):
             self.free.append(st)
 
+    def _join_fill_stream(self) -> None:
+        """The default stream waits for every chunk queued on the fill stream: before anything it ran is read or its
+        slot or the shared prompt buffers are reused elsewhere."""
+
+        fs = getattr(self, "fill_stream", None)
+        if fs is not None and torch.cuda.current_stream() != fs:
+            torch.cuda.current_stream().wait_stream(fs)
+        self.fill_events = []
+
+    def _fill_step(self) -> list[Stream]:
+        """This round's prompt work. Beside decoding streams (F8): one chunk queued on the fill stream, unless
+        FILL_AHEAD chunks are still running there; when a prompt joins or fails the default stream waits for it."""
+
+        fs = getattr(self, "fill_stream", None)
+        if not self.filling:
+            if fs is not None and self.fill_events:
+                self._join_fill_stream()
+            return []
+        if fs is None or not any(not x.done for x in self.streams.values()):
+            if fs is not None and self.fill_events:
+                self._join_fill_stream()                 # alone: the chunks run on the default stream again
+            return self._fill()
+        self.fill_events = [ev for ev in self.fill_events if not ev.query()]
+        if len(self.fill_events) >= FILL_AHEAD:
+            return []                                    # the queued chunks keep the GPU busy; decode only
+        before = set(self.streams)
+        with torch.cuda.stream(fs):
+            ended = self._fill()
+            ev = torch.cuda.Event()
+            ev.record(fs)
+        self.fill_events.append(ev)
+        if ended or set(self.streams) != before:         # a prompt joined (or failed): its state is read next
+            self._join_fill_stream()
+        return ended
+
     def _release(self, s: Stream) -> _Fill:
         """Take a stream out of the filling queue; an image prompt's features go back at once."""
 
+        if getattr(self, "fill_stream", None) is not None:
+            self._join_fill_stream()                     # its slot may be reused at once (no-op inside a chunk)
         self.filling = [x for x in self.filling if x is not s]
         f = self.fills.pop(s.sid)
         if f.image:
@@ -425,7 +503,12 @@ class MultiDecoder:
             try:
                 if x3:                                   # the round's copies out of it are done before the chunk's
                     self.buf.staged.synchronize()
-                f.at = next(f.steps)                     # one chunk, committed: the rows done so far
+                h0 = time.perf_counter()
+                try:
+                    f.at = next(f.steps)                 # one chunk, committed: the rows done so far
+                finally:
+                    if ROUND_LOG:                        # CPU time to stage and launch the chunk (no sync)
+                        self._chunk_host = getattr(self, "_chunk_host", []) + [round(time.perf_counter() - h0, 4)]
                 if x3:                                   # and the chunk's before the next round writes it
                     self.pbuf.staged.synchronize()
                 s.prefill_s += time.perf_counter() - t0
@@ -448,12 +531,26 @@ class MultiDecoder:
     def round(self) -> list[Stream]:
         """One round over the live streams; returns the ones that finished."""
 
-        ended = self._fill() if self.filling else []     # a prompt that ends here joins this round
+        log = ROUND_LOG and (self.filling or self.streams)
+        if log:                                          # measurement only (OCTOJET_ROUND_LOG): synchronised timings
+            torch.cuda.synchronize()
+            t0, pos = time.perf_counter(), [(len(s.prompt), int(s.st.pos)) for s in self.filling]
+        ended = self._fill_step()                        # a prompt that ends here joins this round
+        if log:
+            torch.cuda.synchronize()
+            t1 = time.perf_counter()
         try:
-            return ended + self._decode()
+            out = ended + self._decode()
         except Exception:
             self.unreplied = ended                       # drop() hands them back: their requests still get a reply
             raise
+        if log:
+            torch.cuda.synchronize()
+            t2 = time.perf_counter()
+            host, self._chunk_host = getattr(self, "_chunk_host", []), []
+            _round_log({"t": round(t0, 4), "fill_s": round(t1 - t0, 4), "decode_s": round(t2 - t1, 4), "chunk_host_s": host,
+                        "filling": pos, "live": sum(1 for x in self.streams.values() if not x.done)})
+        return out
 
     def _decode(self) -> list[Stream]:
         live = [s for s in self.streams.values() if not s.done]
@@ -557,6 +654,7 @@ class MultiDecoder:
         """After a failed round: every live and filling stream ends (the caller replies with the error), and the
         streams that ended in that round's fill (done at their first token, or failed) are finished and returned."""
 
+        self._join_fill_stream()                         # nothing queued there runs into reused slots or buffers
         ended, self.unreplied = self.unreplied, []
         self.finish(ended)
         live = [s for s in self.streams.values() if not s.done]

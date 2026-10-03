@@ -12,6 +12,8 @@
 #   up-lil-full, up-radix-full   the same with --precision full (0.6.1+): upstream's default for NVFP4 checkpoints is
 #             now the checkpoint's own math (FP4 activations on SM 12.x, W4A4); "full" runs bf16 activations against
 #             the same weights (W4A16), which is what Octojet runs. Compare speed against both, quality against full.
+#   up-mlx    TensorFold $UP_TAG, $UP_MLX = Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP (default the local copy): the
+#             checkpoint MiaAI-Lab's single-Spark TensorFold recipe serves (tensorfold.dev's 63.6 tok/s figure)
 # Per config (about 60-75 min each; ACC=0 skips accuracy and saves ~30 min each):
 #   startup  window per stream, startup estimate, load time            -> <cfg>-server.log, <cfg>-startup.txt
 #   warm-up  one short request (JIT/graph compile) before any timing
@@ -59,10 +61,10 @@ fi
 cd "$REPO"
 for m in m32k m128k m210k cP cPp; do [ -f "$M/$m.json" ] || { echo "error: $M/$m.json missing" >&2; exit 2; }; done
 ckpt_of(){ case "$1" in ours) echo /tf/flashnext-nvfp4-mixed;; up-lil|up-lil-full) echo "$UP_LIL";;
-  up-radix|up-radix-full) echo "$UP_RADIX";; esac; }
+  up-radix|up-radix-full) echo "$UP_RADIX";; up-mlx) echo "${UP_MLX:-$HOME/tensorfold/flashnext-mlx-4bit-mtp}";; esac; }
 RUN=()
 for c in $CONFIGS; do
-  case "$c" in ours|up-lil|up-radix) ;; up-lil-full|up-radix-full)
+  case "$c" in ours|up-lil|up-radix|up-mlx) ;; up-lil-full|up-radix-full)
     [ "$UP_TAG" != v0.6.0 ] || { echo "error: $c needs --precision (TensorFold 0.6.1+), UP_TAG is $UP_TAG" >&2; exit 2; };;
     *) echo "error: unknown config $c" >&2; exit 2;; esac
   p=$(ckpt_of "$c")

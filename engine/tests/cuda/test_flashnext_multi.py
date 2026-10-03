@@ -144,8 +144,8 @@ def test_prompts_fill_between_rounds_while_streams_decode(kv_dtype):
         grew.append(len(first.out) - before)
         left += [rest.index(s) for s in filling if s not in dec.filling]
     assert all(n > 0 for n in grew)                                   # the first stream decodes every round
-    assert 5 <= len(grew) <= 7                                        # the long prompt's five chunks, plus at most a
-    assert left[-1] == 0 and set(left[:-1]) <= {1, 2}                 # round each for the short ones, which go first
+    assert len(grew) >= 5                                             # the long prompt's five chunks (F8: a round may
+    assert left[-1] == 0 and set(left[:-1]) <= {1, 2}                 # skip a chunk while two run); short ones first
     while dec.live():
         dec.finish(dec.round())
     assert [s.out for s in [first, *rest]] == refs
@@ -208,3 +208,38 @@ def test_a_twin_admitted_while_its_twin_decodes_copies_its_state(kv_dtype):
     while dec.live():
         dec.finish(dec.round())
     assert a.out == refs[0] and b.out == refs[1]
+
+
+@pytest.mark.parametrize("kv_dtype", ["bf16", "int8"])
+def test_shorter_chunks_while_streams_decode_keep_every_token(kv_dtype):
+    """F8: while a stream decodes, a queued prompt fills in half-size chunks (more rounds, so the stream's pause is
+    shorter); alone it would take full chunks. Every stream still emits its solo run, bit for bit."""
+
+    w = _model()
+    g = torch.Generator().manual_seed(29)
+    long = torch.randint(1, V, (70,), generator=g).tolist()           # five 16-row chunks, nine 8-row ones
+    prompts, counts = [PROMPTS[0], long], [80, 24]
+    samplings = [Sampling(seed=5, top_k=20, top_p=0.95), None]
+    refs = []
+    for prompt, sampling, count in zip(prompts, samplings, counts):
+        e = Engine(w, capacity=1024, max_rows=8, prefill_rows=16, kv_dtype=kv_dtype)
+        refs.append(serial_decode(e, prefill(e, prompt, sampling), count, sampling).tokens)
+    dec = MultiDecoder(w, slots=3, capacity=1024, depth=3, confidence=0.3, kv_dtype=kv_dtype, prefill_rows=16,
+                       stop_eos=False)
+    dec.live_prefill_rows = 8                                          # the test model's half chunk (prod: 1,024 of 2,048)
+    first = Stream(prompts[0], counts[0], samplings[0])
+    dec.admit(first, defer=True)
+    dec.finish(dec.round())
+    second = Stream(prompts[1], counts[1], samplings[1])
+    dec.admit(second, defer=True)
+    rounds = 0
+    while second in dec.filling:
+        before = len(first.out)
+        dec.finish(dec.round())
+        rounds += 1
+        assert len(first.out) > before                                # the stream decodes every round
+    assert rounds >= 9                                                # 70 rows in 8-row chunks while the stream lives
+    assert not dec.fill_events                                        # joined: nothing left on the fill stream
+    while dec.live():
+        dec.finish(dec.round())
+    assert [first.out, second.out] == refs

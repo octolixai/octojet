@@ -181,7 +181,7 @@ def test_cut_model_stream_decodes_bit_for_bit_while_a_long_prompt_prefills(cut_m
         before = len(a.out)
         dec.finish(dec.round())
         grew.append(len(a.out) - before)
-    assert len(grew) == 12 and all(n > 0 for n in grew), grew        # A decoded beside every chunk of B
+    assert len(grew) >= 12 and all(n > 0 for n in grew), grew        # A decoded every round of B's fill (F8: >= its chunks)
     while dec.live():
         dec.finish(dec.round())
     assert alone.out == ref_a and a.out == ref_a                      # drafted == serial, beside B or alone

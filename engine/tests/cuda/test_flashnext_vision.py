@@ -185,7 +185,7 @@ def test_an_image_prompt_fills_between_rounds_to_its_solo_bits(dtype):
         dec.finish(dec.round())
         grew.append(len(a.out) - before)
         assert dec.pbuf.rope_rows is None                                   # text rows between the chunks
-    assert len(grew) == 4 and all(n > 0 for n in grew)
+    assert len(grew) >= 4 and all(n > 0 for n in grew)                # F8: a round may skip a chunk while two run
     while dec.live():
         dec.finish(dec.round())
     assert a.out == ref_text and b.out == ref_image

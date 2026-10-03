@@ -88,6 +88,7 @@ class Buffers:
         self.ple_b = torch.zeros((nrow, dh // 32), dtype=bf, device=dev)
         pin = torch.cuda.is_available()
         self.ple_hw = torch.zeros((nrow, dh // 8), dtype=torch.int32, pin_memory=pin)
+        self.prefetched = None   # F8: the next prompt chunk's n-gram entries, read ahead (forward.prestage)
         self.ple_hs = torch.zeros((nrow, dh // 32), dtype=torch.int16, pin_memory=pin)
         self.ple_hb = torch.zeros((nrow, dh // 32), dtype=torch.int16, pin_memory=pin)
         self.ple_emb = torch.empty((rows, c.ple_dim), dtype=bf, device=dev)

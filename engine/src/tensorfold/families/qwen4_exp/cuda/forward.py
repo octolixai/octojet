@@ -271,11 +271,12 @@ def ple_block(layer: LayerW, w: Weights, segs: Sequence[Seg], b: Buffers, R: int
     TIMER.end(_t)
 
 
-def stage_ple_rows(p, b: Buffers, ids: np.ndarray, at: int = 0) -> None:
-    """Copy the rows' n-gram table entries (host memory map) to the GPU buffers, from staging row ``at``."""
+def stage_ple_rows(p, b: Buffers, ids: np.ndarray, at: int = 0, gathered=None) -> None:
+    """Copy the rows' n-gram table entries (host memory map) to the GPU buffers, from staging row ``at``;
+    ``gathered``: the entries already read from the table (``prestage``), the same bytes ``p.table.gather(ids)`` gives."""
 
     _h = TIMER.host_begin("stage_ple_gather")
-    words, scales, biases = p.table.gather(ids)
+    words, scales, biases = gathered if gathered is not None else p.table.gather(ids)
     n = words.shape[0]
     rows = slice(at, at + n)
     b.ple_hw[rows].numpy()[:] = words.view(np.int32)
@@ -406,6 +407,38 @@ def candidates(w: Weights, b: Buffers, logits: torch.Tensor, R: int, *, id_map: 
     w.comm.all_gather(c, b.cand_all[:b.world * R * (2 * CAND + 1)])
 
 
+def prestage(w: Weights, b: Buffers, st: State, tokens: Sequence[int]) -> None:
+    """F8: read a prompt's NEXT chunk's n-gram table entries now, on the CPU, while the GPU still runs the chunk just
+    launched; the next ``stage`` of exactly that chunk (same state, position and tokens) uses them instead of reading
+    the table again. Between chunks the concurrent decoder runs a decode round that waits for the GPU, so without this
+    the table reads of the next chunk would run with the GPU idle. Only host arrays are written: the pinned and device
+    buffers the running chunk reads are untouched. Same bytes, so the same bits."""
+
+    b.prefetched = None
+    layers = getattr(w, "layers", None) or []
+    if getattr(w, "x3", None) is not None or not tokens or not any(getattr(x, "ple", None) is not None for x in layers):
+        return
+    toks = np.asarray(tokens, dtype=np.int64)
+    data = []
+    for i, layer in enumerate(layers):
+        if layer.ple is not None:
+            ids = layer.ple.ngram.ids(st.ple_history, toks)
+            data.append((i, ids, layer.ple.table.gather(ids)))
+    b.prefetched = (st, int(st.pos), st.ple_history.copy(), toks, data)
+
+
+def _prefetched_for(b: Buffers, st: State, toks: np.ndarray):
+    got = getattr(b, "prefetched", None)
+    b.prefetched = None                                  # one use at most: a stale prefetch is never kept
+    if got is None:
+        return None
+    pst, pos, hist, ptoks, data = got
+    if (pst is not st or pos != int(st.pos) or not np.array_equal(hist, st.ple_history)
+            or not np.array_equal(ptoks, toks)):
+        return None
+    return {i: (ids, gathered) for i, ids, gathered in data}
+
+
 def stage(w: Weights, b: Buffers, windows: Sequence[tuple[State, Sequence[int]]]) -> list[Seg]:
     """Host work before a forward (token ids, n-gram rows into static buffers); returns each stream's segment."""
 
@@ -427,13 +460,17 @@ def stage(w: Weights, b: Buffers, windows: Sequence[tuple[State, Sequence[int]]]
     _h = TIMER.host_begin("stage_copy")
     b.ids[:R].copy_(b.ids_host[:R], non_blocking=True)
     TIMER.host_end("stage_copy", _h)
-    for layer in w.layers:
+    ready = (_prefetched_for(b, windows[0][0], np.asarray(windows[0][1], dtype=np.int64))
+             if len(windows) == 1 else None)            # a prompt chunk prestaged during the previous chunk (F8)
+    if len(windows) != 1:
+        b.prefetched = None
+    for i, layer in enumerate(w.layers):
         if layer.ple is not None:
             p = layer.ple
             for (st, tokens), (_, a0, _) in zip(windows, segs):
                 toks = np.asarray(tokens, dtype=np.int64)
                 _h = TIMER.host_begin("stage_tokens")
-                ids = p.ngram.ids(st.ple_history, toks)
+                ids, gathered = ready[i] if ready is not None else (p.ngram.ids(st.ple_history, toks), None)
                 TIMER.host_end("stage_tokens", _h)
                 st.ple_last = (st.ple_history, toks)
                 if w.x3 is not None:
@@ -441,7 +478,7 @@ def stage(w: Weights, b: Buffers, windows: Sequence[tuple[State, Sequence[int]]]
 
                     stage_ple(p.table, w.x3, ids, at=a0 * (ids.size // len(toks)))
                 else:
-                    stage_ple_rows(p, b, ids, at=a0 * (ids.size // len(toks)))       # ids [rows, heads]
+                    stage_ple_rows(p, b, ids, at=a0 * (ids.size // len(toks)), gathered=gathered)   # ids [rows, heads]
     _h = TIMER.host_begin("stage_copy")
     b.staged.record()
     TIMER.host_end("stage_copy", _h)
