@@ -64,11 +64,11 @@ def build_parser() -> argparse.ArgumentParser:
                             "pulled; none: no draft model")
     speed.add_argument("--drafter-bits", type=int, default=4, help="quantize the draft model's linears (0: bf16)")
     speed.add_argument("--mtp-drafts", type=int, default=None,
-                       help="most MTP drafts a round (Qwen3.8 Flash Next: 3 on Mac; on CUDA 6, stopping under 30%% "
+                       help="most MTP drafts a round (Qwen3.8 Flash Next: 3 on Mac; on CUDA 6, stopping under 70%% "
                             "confidence); 0: no MTP drafts (any family)")
     speed.add_argument("--mtp-confidence", type=float, default=None,
                        help="on CUDA, stop an MTP chain before a later draft under this probability "
-                            "(Flash Next default 0.30)")
+                            "(Flash Next default 0.70)")
     speed.add_argument("--lane-kernels", choices=("auto", "on", "off"), default="auto",
                        help="lane kernels for Qwen3.8 dense (auto: on GPUs with tensor units)")
     speed.add_argument("--prompt-cache-gib", type=float, default=None,
@@ -118,6 +118,10 @@ def build_parser() -> argparse.ArgumentParser:
                       help="where packed expert tables are cached between starts (Flash Next NVFP4 checkpoints; "
                            "default $OCTOJET_CACHE_DIR/packed or ~/.cache/octojet/packed); off: never read or "
                            "write; verify: re-hash the export's shards and every cached table before serving")
+    cuda.add_argument("--rope-yarn", type=float, default=None, metavar="FACTOR",
+                      help="Flash Next on CUDA: YaRN rotary scaling at this factor, the window becoming the "
+                           "checkpoint's 262,144 x FACTOR (2: 524,288). Static YaRN can cost some quality on short "
+                           "prompts, so match the factor to the length you need (default: off, plain RoPE)")
     serve.set_defaults(func=cmd_serve)
 
     pull = commands.add_parser("pull", help="download models (or draft models) from Hugging Face")
@@ -289,11 +293,15 @@ def _generation_config(model_dir: Path) -> dict[str, Any]:
     return sampling
 
 
-def _model_context(model_dir: Path) -> int:
+def _model_context(model_dir: Path, rope_yarn: float | None = None) -> int:
     from tensorfold.families import read_config
 
     config = read_config(model_dir)
     text = config.get("text_config") or config
+    if rope_yarn is not None:                  # --rope-yarn: the checkpoint's window times the factor
+        from tensorfold import rope_scaling
+
+        return rope_scaling.window(text, rope_yarn)
     limit = text.get("max_position_embeddings") or config.get("max_position_embeddings")
     return int(limit) if isinstance(limit, int) and limit > 0 else 0
 
@@ -356,6 +364,8 @@ def _serve_cuda(args: argparse.Namespace, family: Any, model_dir: Path, context:
     if getattr(args, "kv_dtype", "bf16") != "bf16":
         options["kv_dtype"] = args.kv_dtype
     options.update(_vision_options(args))
+    if getattr(args, "rope_yarn", None) is not None:
+        options["rope_yarn"] = float(args.rope_yarn)
     if args.mtp_drafts is not None:
         options["mtp_drafts"] = int(args.mtp_drafts)
     if args.ple_on_ssd:
@@ -436,7 +446,8 @@ def cmd_serve(args: argparse.Namespace) -> int:
     families.require_readable(family, families.read_config(config_dir), backend)
     _note_untested(family, args.model)
     required_files = getattr(family.package, "REQUIRED_FILES", {}).get(args.model, ())
-    native_context = _model_context(config_dir)
+    yarn = getattr(args, "rope_yarn", None)
+    native_context = _model_context(config_dir) if yarn is None else _model_context(config_dir, yarn)
     context = native_context if args.context is None else int(args.context)
     if context < 0:
         raise ValueError("--context must be 0 or a positive token count")

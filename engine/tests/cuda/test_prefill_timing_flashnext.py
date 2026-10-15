@@ -39,8 +39,8 @@ def bits_equal(a, b):
 def cut():
     from tensorfold.families.qwen4_exp.cuda import weights as W
     real = W.Config.read
-    def read(d):
-        c = real(d); c.layers = LAYERS; c.ple_layers = [i for i in c.ple_layers if i < LAYERS]; return c
+    def read(d, **kw):                                       # (rope_yarn and other Config.read options pass through)
+        c = real(d, **kw); c.layers = LAYERS; c.ple_layers = [i for i in c.ple_layers if i < LAYERS]; return c
     W.Config.read = staticmethod(read)
     try:
         w = W.load(MODEL, "cuda", mtp=True, draft_vocab="default", packed_cache="off")

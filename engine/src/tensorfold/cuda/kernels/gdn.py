@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -15,8 +16,8 @@ def _ext():
     from tensorfold.cuda.build import load
 
     here = Path(__file__).parent
-    return load(name="tensorfold_gdn_v2", sources=[str(here / "gdn.cpp"), str(here / "gdn.cu"),
-                                                   str(here / "gdn_prefill.cu")],
+    return load(name="octojet_gdn_v1", sources=[str(here / "gdn.cpp"), str(here / "gdn.cu"),
+                                                str(here / "gdn_prefill.cu")],
                 extra_cuda_cflags=["-O3", "--fmad=false"], verbose=False)
 
 
@@ -159,8 +160,30 @@ def replay(table: torch.Tensor, layers: int, streams: int, rows: torch.Tensor, c
     return None if in_place else out
 
 
+AHEAD_ENV = "OCTOJET_GDN_CHAIN_AHEAD"
+
+
+def chain_ahead() -> bool:
+    """``OCTOJET_GDN_CHAIN_AHEAD`` (default on, read at each call): the prompt chain copies its next stage of rows
+    while it steps the current one (fp32 keys; the same arithmetic, so the same bits). 0 takes the staged kernel."""
+
+    value = os.environ.get(AHEAD_ENV, "1").strip().lower()
+    if value in ("0", "off", "false", "no"):
+        return False
+    if value in ("", "1", "on", "true", "yes"):
+        return True
+    raise ValueError(f"{AHEAD_ENV}={value!r}: expected 1 or 0")
+
+
+def chain_form(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, g: torch.Tensor, beta: torch.Tensor,
+               state: torch.Tensor, final: torch.Tensor, ahead: bool | None = None) -> tuple[torch.Tensor, bool]:
+    """``chain``, and whether the double-buffered kernel ran (``ahead`` None: the switch decides)."""
+
+    return _ext().prefill(q, k, v, g, beta, state, final, chain_ahead() if ahead is None else bool(ahead))
+
+
 def chain(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, g: torch.Tensor, beta: torch.Tensor, state: torch.Tensor,
           final: torch.Tensor) -> torch.Tensor:
     """Prefill chain from ``state`` (read only) to ``final``: chunk-invariant bits, not the verify kernel's."""
 
-    return _ext().prefill(q, k, v, g, beta, state, final)
+    return chain_form(q, k, v, g, beta, state, final)[0]

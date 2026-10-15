@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import torch
 import triton
 import triton.language as tl
@@ -9,10 +11,12 @@ import triton.language as tl
 from tensorfold.cuda.prefill_timing import TIMER
 
 from .kvquant import dequant_group_4, dequant_group_8, h32
+from .warmplan import select_launches, specialisation
 
 CHUNK = 512
 TILE = 64
 SELECT_REGS = 32768  # _select holds a row's block scores in registers up to this many; past it they spill
+LAUNCHED: set = set()  # selector specialisations launched in this process (warmplan.specialisation)
 
 
 @triton.jit
@@ -173,7 +177,8 @@ def attention(q: torch.Tensor, kc: torch.Tensor, vc: torch.Tensor, pos0: torch.T
 
 @triton.jit
 def _pool(IKC, POOLED, POS0, W, INV, ROPE, DELTA, eps, R, DI: tl.constexpr, HALF: tl.constexpr,
-          RATIO: tl.constexpr, MODE: tl.constexpr = 0, S1: tl.constexpr = 11, S2: tl.constexpr = 10):
+          RATIO: tl.constexpr, MODE: tl.constexpr = 0, S1: tl.constexpr = 11, S2: tl.constexpr = 10,
+          MSCALE: tl.constexpr = 1.0):
     """Pool each complete RATIO-key block in fp32 order, then bf16 RMSNorm and rotate-half RoPE at its first position; recomputing a block preserves its bits."""
 
     i = tl.program_id(0)
@@ -206,6 +211,9 @@ def _pool(IKC, POOLED, POS0, W, INV, ROPE, DELTA, eps, R, DI: tl.constexpr, HALF
             axis = tl.where((j % 3 == 1) & (j < 3 * S1), ph, tl.where((j % 3 == 2) & (j < 3 * S2), pv, pt))
             ang = axis.to(tl.float32) * tl.load(INV + j)
         cos, sin = tl.cos(ang), tl.sin(ang)
+        if MSCALE != 1.0:                            # YaRN: cos and sin times the attention factor (rotary dims only)
+            cos = cos * MSCALE
+            sin = sin * MSCALE
         rot = tl.where(d < HALF, xn * cos - xpn * sin, tl.where(d < 2 * HALF, xpn * sin + xn * cos, xn))
         tl.store(POOLED + b.to(tl.int64) * DI + d, rot.to(tl.bfloat16))
 
@@ -345,6 +353,7 @@ def _launch_select(scratch: AttnScratch, pos0: torch.Tensor, rows: int, blocks: 
 
     top = scratch.budget // scratch.ratio
     width = triton.next_power_of_2(blocks)
+    LAUNCHED.add(specialisation(rows, blocks, SELECT_REGS))   # what this process has compiled (F10 warm-up, tests)
     if width <= SELECT_REGS:
         _select[(rows,)](scratch.scores, pos0, scratch.ids, scratch.nk, scratch.sparse, scratch.nb,
                          RATIO=scratch.ratio, TOP=top, IDW=scratch.idw, BLOCK=width, num_warps=16)
@@ -354,26 +363,54 @@ def _launch_select(scratch: AttnScratch, pos0: torch.Tensor, rows: int, blocks: 
                            RATIO=scratch.ratio, TOP=top, IDW=scratch.idw, TB=tb, num_warps=warps)
 
 
+def warm_select(scratch: AttnScratch) -> int:
+    """F10: compile every selector specialisation a context of up to the scratch's capacity reaches, so no request
+    compiles one (``warmplan.select_launches``). Launched on private tensors at position 0, where every row is dense and
+    only writes its own length: the scratch, the caches and every state are untouched. Returns the launches made."""
+
+    if not scratch.qsa:
+        return 0
+    capacity = scratch.nb * scratch.ratio
+    plan = select_launches(capacity, scratch.budget, scratch.ratio, SELECT_REGS)
+    if not plan:
+        return 0
+    dev = scratch.ids.device
+    n = max(r for r, _ in plan)
+    tmp = SimpleNamespace(budget=scratch.budget, ratio=scratch.ratio, nb=scratch.nb, idw=scratch.idw,
+                          scores=torch.zeros((n, 1), dtype=scratch.scores.dtype, device=dev),
+                          ids=torch.zeros((n, scratch.idw), dtype=scratch.ids.dtype, device=dev),
+                          nk=torch.zeros((n,), dtype=scratch.nk.dtype, device=dev),
+                          sparse=torch.zeros((n,), dtype=scratch.sparse.dtype, device=dev))
+    pos0 = torch.zeros((1,), dtype=torch.int32, device=dev)          # the dtype of every real position tensor
+    for rows, blocks in plan:
+        _launch_select(tmp, pos0, rows, blocks)
+    return len(plan)
+
+
 def qsa_select(iq: torch.Tensor, ikc: torch.Tensor, pooled: torch.Tensor, pos0: torch.Tensor, ik_scale: torch.Tensor,
                inv_freq: torch.Tensor, eps: float, scratch: AttnScratch, rows: int,
-               *, context: int | None = None, rope=None, delta=None, sections=(11, 11, 10)) -> None:
+               *, context: int | None = None, rope=None, delta=None, sections=(11, 11, 10),
+               rope_scale: float = 1.0) -> None:
     """Pool the blocks the window completes, score and select each sparse row's blocks (scratch.ids/nk/sparse)."""
 
-    qsa_pool(ikc, pooled, pos0, ik_scale, inv_freq, eps, scratch, rows, rope=rope, delta=delta, sections=sections)
+    qsa_pool(ikc, pooled, pos0, ik_scale, inv_freq, eps, scratch, rows, rope=rope, delta=delta, sections=sections,
+             rope_scale=rope_scale)
     qsa_rows(iq, pooled, pos0, scratch, rows, context=context)
 
 
 def qsa_pool(ikc: torch.Tensor, pooled: torch.Tensor, pos0: torch.Tensor, ik_scale: torch.Tensor,
              inv_freq: torch.Tensor, eps: float, scratch: AttnScratch, rows: int, *, rope=None, delta=None,
-             sections=(11, 11, 10)) -> None:
+             sections=(11, 11, 10), rope_scale: float = 1.0) -> None:
     """The pooled key of every block that rows [P0, P0 + rows) complete, rotated at its first token's position:
-    ``delta`` [1] for text after images, ``rope`` [rows, 3] for an image prompt's chunk (as ``glue.attn_prep``)."""
+    ``delta`` [1] for text after images, ``rope`` [rows, 3] for an image prompt's chunk (as ``glue.attn_prep``);
+    ``rope_scale`` YaRN's cos/sin multiplier (1.0: plain RoPE, the kernel unchanged)."""
 
     mode = 2 if rope is not None else 1 if delta is not None else 0
     _pool[(rows // scratch.ratio + 2,)](ikc, pooled, pos0, ik_scale, inv_freq,
                                         rope if rope is not None else pos0, delta if delta is not None else pos0,
                                         eps, rows, DI=ikc.shape[1], HALF=inv_freq.numel(), RATIO=scratch.ratio,
-                                        MODE=mode, S1=sections[1], S2=sections[2], num_warps=1)
+                                        MODE=mode, S1=sections[1], S2=sections[2], MSCALE=float(rope_scale),
+                                        num_warps=1)
 
 
 def qsa_rows(iq: torch.Tensor, pooled: torch.Tensor, pos0: torch.Tensor, scratch: AttnScratch, rows: int, *,

@@ -122,14 +122,14 @@ def requant_rows(head, ids: torch.Tensor, device) -> tuple[torch.Tensor, torch.T
 
 
 def load(model_dir: str | Path, device: str = "cuda", *, mtp: bool = True, tp: tuple[int, int] | None = None,
-         draft_vocab: int | str | None = None):
+         draft_vocab: int | str | None = None, rope_yarn: float | None = None):
     from .qmm import make_q4
-    from .weights import GDNW, HC, AttnW, Config, LayerW, MoEW, MTPW, PLEW, Weights, draft_token_ids
+    from .weights import GDNW, HC, AttnW, Config, LayerW, MoEW, MTPW, PLEW, Weights, draft_token_ids, rope_tables
 
     if tp is not None and tp[1] > 1:
         raise ValueError("EXL3 packs of Flash Next run on one GPU; two ranks read the MLX checkpoint")
     model_dir = Path(model_dir)
-    cfg = Config.read(model_dir)
+    cfg = Config.read(model_dir, rope_yarn=rope_yarn)
     pk = Pack(model_dir)
     sc = Scratch(cfg.top_k + 1)
     T = "model.language_model."
@@ -201,9 +201,9 @@ def load(model_dir: str | Path, device: str = "cuda", *, mtp: bool = True, tp: t
         torch.cuda.empty_cache()
     mixer = hc(T + "hyper_connection_mixer", False)
     head = x3(sc, pk, "lm_head", device, head=True)
-    inv = torch.tensor(cfg.rope_theta, dtype=torch.float64) ** (
-        -torch.arange(0, cfg.rotary_dim // 2, dtype=torch.float64) / (cfg.rotary_dim // 2))
-    w = Weights(cfg, (embed.contiguous(),), loaded, mixer, head, inv.to(torch.float32).to(device), around_one=True)
+    inv, rope_scale = rope_tables(cfg)
+    w = Weights(cfg, (embed.contiguous(),), loaded, mixer, head, inv.to(device), around_one=True,
+                rope_scale=rope_scale)
     w.meta.update(rank=0, world=1, vocab_offset=0, full=cfg, centred_offset=offset)
     if mtp and pk.has("mtp.fc_embedding.trellis"):
         w.mtp = MTPW(centred("mtp.pre_fc_norm_embedding.weight"), centred("mtp.pre_fc_norm_hidden.weight"),

@@ -43,7 +43,8 @@ def test_page_room_is_memavailable_on_unified_memory_only(meminfo):
     assert capacity.page_room(device(False, 20 * GB, 80 * GB)) is None
 
 
-def test_default_window_leaves_mapped_tables_their_pages():
+def test_default_window_leaves_mapped_tables_their_pages(monkeypatch):
+    monkeypatch.setenv("OCTOJET_TABLE_MARGIN_GIB", "0")      # the rule itself; the margin is tested in test_table_margin
     geometry = Geometry(lambda slots: slots * 100_000, 7)
     weights = Weights(resident=80 * GB, staging=10 * GB, mapped=32 * GB)
     budget, room = 107 * GB, 120 * GB                      # the reserve taken from 120 GB available

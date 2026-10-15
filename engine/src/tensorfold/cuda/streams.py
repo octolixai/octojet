@@ -7,6 +7,16 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Sequence
 
 
+def gone(stream) -> bool:
+    """Whether a request's client has disconnected (False when unknown or the check itself fails)."""
+
+    check = getattr(stream, "client_gone", None)
+    try:
+        return bool(check()) if check is not None else False
+    except Exception:  # noqa: BLE001  a failing check never fails the request
+        return False
+
+
 @dataclass
 class Stream:
     """One request. ``emit`` receives each round's new tokens and returns True to stop the stream."""
@@ -17,6 +27,7 @@ class Stream:
     draft: bool = True                            # False: one row a round, the serial reference
     vision: Any = None                            # an image prompt's prepared pixels and positions (--vision)
     emit: Callable[[list[int]], bool | None] | None = None
+    client_gone: Callable[[], bool] | None = None   # the client has disconnected (checked before admission and chunks)
     sid: int = 0
     st: Any = None                                # the committed model state
     snap: Any = None                              # the drafter's context

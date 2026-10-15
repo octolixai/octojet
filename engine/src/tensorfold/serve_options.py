@@ -31,6 +31,13 @@ def check(args: argparse.Namespace, family: Any, backend: str, config_dir: Any =
             raise ValueError("prefix checkpoints are a Flash Next CUDA feature: drop --prefix-checkpoints "
                              f"(or pass 0) for {family.title} on {'CUDA' if backend == 'cuda' else 'MLX'}")
 
+    factor = getattr(args, "rope_yarn", None)
+    if factor is not None:
+        if family.model_type != "qwen4_exp" or backend != "cuda":
+            raise ValueError("--rope-yarn serves Qwen3.8 Flash Next on the CUDA engine only")
+        if not factor > 1.0:
+            raise ValueError(f"--rope-yarn takes a factor above 1 (2 doubles the window), not {factor}")
+
     kv = getattr(args, "kv_dtype", "bf16")
     if kv != "bf16" and backend != "cuda":
         raise ValueError(f"--kv-dtype {kv} is a CUDA engine option: the MLX path caches keys and values as bf16")

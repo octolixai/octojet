@@ -129,6 +129,23 @@ verify` re-hashes the export's shards and every cached table before serving. The
 sizes, mtimes, headers and their first and last MiB, so a payload edited in place with the same size and mtime
 outside those ranges is caught only by `verify`. Remove the directory to reclaim the space. A changed checkpoint or a bumped `PACK_VERSION` changes the key and rebuilds automatically into a new directory beside the old one (about ten minutes once; old directories are never deleted, so `rm -r` them after a confirmed rebuild); serve flags, kernel changes that keep the packed layout, and moving the directory do not. In a container whose home directory is ephemeral, always pass an explicit `--packed-cache DIR` on a mounted volume (or `off`): the default root would rebuild the cache into the container on every start.
 
+### Longer windows (YaRN)
+
+The checkpoint's native window is 262,144 tokens. `--rope-yarn FACTOR` (CUDA only) applies YaRN rotary scaling, as
+Qwen's model card describes for contexts past that, and multiplies the window by the factor: `--rope-yarn 2` gives
+524,288 tokens, so `--kv-dtype int8 --parallel 3 --rope-yarn 2` asks for 3 x 524,288 if memory allows (the startup
+admission shrinks an omitted `--context` to what fits, as usual, and an explicit `--context` up to the new window is
+checked against the memory). The startup log names the setting: `[octojet] rope: YaRN factor 2.0, window 524288`.
+
+The math is transformers' `_compute_yarn_parameters` (beta_fast 32, beta_slow 1, original window 262,144): the
+rotary frequencies of the 64 rotated dimensions change, and cos and sin are multiplied by 0.1 ln(factor) + 1
+(1.069 at 2). Every rotary consumer uses them: attention queries and keys, the sparse indexer's queries and pooled
+block keys, the MTP head, and image prompts' interleaved t/h/w positions. YaRN here is static: the same tables at
+every length, so it can cost some quality on short prompts. Match the factor to the length you need (Qwen's card
+suggests 4 only for windows near a million tokens), and leave it off for prompts that fit 262,144. A checkpoint
+whose `config.json` already says `rope_type: yarn` is served with its own parameters (`--rope-yarn` replaces its
+factor). Without the option the rotary tables and kernels are unchanged, bit for bit.
+
 ### Prefill timing
 
 Three environment variables, read at server start, control the prefill instrumentation. All are off by default and

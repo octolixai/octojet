@@ -1,0 +1,3 @@
+[octojet] CUDA rank 0 startup estimate 86.12 GiB within 105.75 GiB; native 262144, allocated prompt/reply window 240823, cache slots 240830
+[octojet] Flash Next on CUDA: 1 to 6 MTP drafts a round, a chain stops before a later draft under 70%; 3 streams of 240823 prompt/reply tokens (4868 MiB a stream, 4 prefix checkpoints each), eager; int8 KV cache (fp16 scale per 32 values); n-gram tables read in 7.4s; 0 decode graphs captured; prompt kernels warmed in 101.9s
+[octojet] serving f1 at http://0.0.0.0:8080/v1 on CUDA (sampling: temperature 1.0, top_k 20, top_p 0.95; drafts: on; context: 240823; loaded in 160.4s)

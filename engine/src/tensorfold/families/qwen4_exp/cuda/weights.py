@@ -86,9 +86,15 @@ class Config:
     group_size: int
     bits: int
     mrope_section: tuple[int, int, int] = (11, 11, 10)   # interleaved t/h/w rotary pairs (image and video positions)
+    yarn: dict | None = None           # YaRN's parameters (``rope_scaling.yarn_parameters``); None: plain RoPE
+    window: int = 0                    # the native prompt-plus-reply window (original x factor under YaRN)
 
     @classmethod
-    def read(cls, model_dir: str | Path) -> "Config":
+    def read(cls, model_dir: str | Path, rope_yarn: float | None = None) -> "Config":
+        """``rope_yarn`` (``--rope-yarn``): YaRN at that factor; None keeps the checkpoint's rope as it is."""
+
+        from tensorfold import rope_scaling
+
         raw = json.loads((Path(model_dir) / "config.json").read_text())
         t = dict(raw.get("text_config") or raw)
         rope = dict(t.get("rope_parameters") or {})
@@ -121,6 +127,7 @@ class Config:
             ple_eos=int(teos[0] if isinstance(teos, list) else teos) if teos is not None else 0,
             eos=eos, group_size=int(quant.get("group_size", 32)), bits=int(quant.get("bits", 4)),
             mrope_section=_sections(rope.get("mrope_section", (11, 11, 10))),
+            yarn=rope_scaling.yarn_parameters(t, rope_yarn), window=rope_scaling.window(t, rope_yarn),
         )
 
     @property
@@ -216,6 +223,7 @@ class Weights:
     head: Q4
     inv_freq: torch.Tensor
     mtp: MTPW | None = None
+    rope_scale: float = 1.0   # YaRN's cos/sin multiplier (attention_factor); 1.0: plain RoPE, kernels unchanged
     around_one: bool = True
     meta: dict[str, Any] = field(default_factory=dict)
     comm: Any = None          # tensor parallel: a ``comm.NCCL`` (None on one GPU)
@@ -355,9 +363,17 @@ def draft_token_ids(draft_vocab: int | str | None) -> np.ndarray | None:
     return np.unique(np.loadtxt(source, dtype=np.int64).reshape(-1))
 
 
+def rope_tables(cfg: Config) -> tuple[torch.Tensor, float]:
+    """The fp32 inverse frequencies (host) and YaRN's cos/sin multiplier (1.0: plain RoPE), see ``rope_scaling``."""
+
+    from tensorfold import rope_scaling
+
+    return rope_scaling.rope_tables(cfg)
+
+
 def load(model_dir: str | Path, device: str = "cuda", *, mtp: bool = True, tp: tuple[int, int] | None = None,
          draft_vocab: int | str | None = None, ple_on_ssd: bool = False,
-         packed_cache: str | None = None) -> Weights:
+         packed_cache: str | None = None, rope_yarn: float | None = None) -> Weights:
     """Load rank ``tp``'s head, expert-width and vocabulary shares while replicating other weights; ``draft_vocab`` restricts draft scoring to default/file ids or ids below N, with None using all ids."""
 
     import time
@@ -369,8 +385,8 @@ def load(model_dir: str | Path, device: str = "cuda", *, mtp: bool = True, tp: t
     PHASES.reset()
     model_dir = Path(model_dir)
     if exl3.is_exl3(model_dir):                       # an EXL3 pack: its own loader, the same dataclasses
-        return exl3.load(model_dir, device, mtp=mtp, tp=tp, draft_vocab=draft_vocab)
-    full = Config.read(model_dir)
+        return exl3.load(model_dir, device, mtp=mtp, tp=tp, draft_vocab=draft_vocab, rope_yarn=rope_yarn)
+    full = Config.read(model_dir, rope_yarn=rope_yarn)
     rank, world = tp if tp is not None else (0, 1)
     cfg = full if world == 1 else replace(full, heads=full.heads // world, kv_heads=full.kv_heads // world,
                                           nk=full.nk // world, nv=full.nv // world,
@@ -544,9 +560,8 @@ def load(model_dir: str | Path, device: str = "cuda", *, mtp: bool = True, tp: t
         draft_ids = torch.from_numpy(ids).to(device)
         draft_head = make_q4(*_rows_at(head_raw, draft_ids))
     del head_raw
-    inv = torch.tensor(cfg.rope_theta, dtype=torch.float64) ** (
-        -torch.arange(0, cfg.rotary_dim // 2, dtype=torch.float64) / (cfg.rotary_dim // 2))
-    w = Weights(cfg, embed, loaded, mixer, head, inv.to(torch.float32).to(device), around_one=around_one)
+    inv, rope_scale = rope_tables(cfg)
+    w = Weights(cfg, embed, loaded, mixer, head, inv.to(device), around_one=around_one, rope_scale=rope_scale)
     w.meta.update(rank=rank, world=world, vocab_offset=rank * vl, full=full)
     w.draft_head, w.draft_ids = draft_head, draft_ids
     if mtp and rd.has(prefix + "mtp.fc_embedding.weight"):

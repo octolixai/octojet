@@ -33,8 +33,8 @@ def load_cut(packed_cache):
 
     real = W.Config.read
 
-    def cut(d):
-        c = real(d)
+    def cut(d, **kw):
+        c = real(d, **kw)
         c.layers = LAYERS
         c.ple_layers = [i for i in c.ple_layers if i < LAYERS]
         return c

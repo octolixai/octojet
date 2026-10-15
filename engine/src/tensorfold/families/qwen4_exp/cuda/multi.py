@@ -24,11 +24,12 @@ import numpy as np
 import torch
 
 from tensorfold.cuda.prefill_timing import TIMER
+from tensorfold.server.cancellation import RequestCancelled
 from tensorfold.cuda.sampling import sample_streams
-from tensorfold.cuda.streams import Stream, accept
+from tensorfold.cuda.streams import Stream, accept, gone as _gone
 from tensorfold.engine.exact_sampling import MARGIN, choose_rows
 
-from .decode import PREFILL_ROWS, WARM_TAIL, Engine, draft, prefill, prefill_steps
+from .decode import PREFILL_ROWS, WARM_TAIL, Engine, draft, prefill, prefill_steps, warm_long_select
 from .forward import commit, compute, stage
 from .mtp import mtp_compute, mtp_stage
 from .prefix import Kept, Match, exact_hit, match, plan_checkpoints, snapshot_bytes, turn_start
@@ -265,9 +266,11 @@ class MultiDecoder:
         return len(self.streams) + len(self.filling)
 
     @torch.no_grad()
-    def warm(self) -> None:
-        """A synthetic greedy request through prefill, its drafts and one round, then forgotten, so no request compiles or loads a kernel."""
+    def warm(self) -> dict:
+        """A synthetic greedy request through prefill, its drafts and one round, then forgotten, then the block selector
+        for every longer context (``decode.warm_long_select``), so no request compiles or loads a kernel."""
 
+        t0 = time.perf_counter()
         s = Stream([0] * min(self.pbuf.rows + WARM_TAIL, self.capacity - self.depth - 2), 2)
         saved, self.checkpoints = self.checkpoints, 0    # warm-up takes no checkpoint (F2d 5.3) and keeps nothing
         try:
@@ -280,6 +283,11 @@ class MultiDecoder:
         self._drop_kept(s.st)
         if all(f is not s.st for f in self.free):
             self.free.append(s.st)
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+        info = {"prompt_s": time.perf_counter() - t0}
+        info.update(warm_long_select(self.pbuf.attn))
+        return info
 
     @torch.no_grad()
     def admit(self, s: Stream, *, defer: bool = False) -> None:
@@ -407,7 +415,9 @@ class MultiDecoder:
         """A failed admission or fill: no stream registered, nothing kept in its half-restored or half-prefilled
         slot, the slot free again."""
 
-        if m is not None:
+        if isinstance(exc, RequestCancelled):
+            print(f"[octojet] {exc}", file=sys.stderr, flush=True)
+        elif m is not None:
             print(f"[octojet] prefix reuse {m.kind} failed: {exc}", file=sys.stderr, flush=True)
         if registered:
             self.streams.pop(s.sid, None)
@@ -503,6 +513,8 @@ class MultiDecoder:
             try:
                 if x3:                                   # the round's copies out of it are done before the chunk's
                     self.buf.staged.synchronize()
+                if _gone(s):                             # the client left: stop the fill here, free the slot
+                    raise RequestCancelled(f"the client left; prompt fill stopped at {f.at}/{len(s.prompt)} rows")
                 h0 = time.perf_counter()
                 try:
                     f.at = next(f.steps)                 # one chunk, committed: the rows done so far

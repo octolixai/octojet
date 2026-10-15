@@ -1,0 +1,25 @@
+metric                                               ours            up-mlx       up-lil-full     up-radix-full
+window                                         3 x 243197  up to 3 x 262144  up to 3 x 262144  up to 3 x 262144
+cold-m32k                                          15.783            12.843            19.087             21.37
+cold-m32k-b                                             -                 -                 -                 -
+cold-m128k                                         58.566            57.257            83.396            92.761
+cold-m210k                                        107.203           104.174            143.74           162.062
+P-cold                                             30.484            30.296             44.14            49.584
+Pp-variant                                          3.118            29.163            44.064            49.579
+P-resend                                             0.13             0.174             0.198             0.187
+decode fibonacci-raw t=1                             64.1              68.3              52.2              41.4
+decode gpu-chat-no-think t=1                         62.1              56.4              44.2              32.5
+decode fibonacci-raw t=0                             61.5              66.9              55.5              46.2
+decode gpu-chat-no-think t=0                         86.0              63.2              43.2              37.4
+agent cold ttft                                     49.62             46.55             66.43             74.08
+agent follow-up ttft (median)                        4.18              5.49              5.26              6.58
+agent follow-up step total (median)                 11.52              13.8             15.67              21.8
+live-stream gap during m128k                        1.321             1.327             1.623             1.801
+gap: m128k ttft while a reply streams              84.273            74.864            92.779           102.683
+queue: m128k ttft                                  62.647            58.595            85.246             94.37
+queue: cold short ttft during m128k                 4.536              2.84             3.467             3.153
+queue: resend ttft during m128k                     1.895             3.834             2.464             2.246
+GSM8K                                                   -                 -                 -                 -
+HumanEval pass@1                                        -                 -                 -                 -
+
+TTFTs and agent times in seconds (client side, request sent -> first text); decode in tok/s; window = streams x tokens at int8 KV --parallel 3. Text only; images are off for every config.

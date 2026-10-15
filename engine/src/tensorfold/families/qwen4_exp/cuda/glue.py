@@ -120,6 +120,92 @@ def hc_writeback(h: torch.Tensor, hout: torch.Tensor, pss: torch.Tensor, streams
 
 
 @triton.jit
+def _hc_writeback_normed(H, PSS, BR, INJ, Y, WTS, RS, SCALE, NORMED, eps,
+                         D: tl.constexpr, S: tl.constexpr, MODE: tl.constexpr, TOPK: tl.constexpr,
+                         SLOTS: tl.constexpr, BLOCK: tl.constexpr, WORLD: tl.constexpr):
+    """Program r (F12, prompt chunks): ``_hc_writeback``'s chunks of row r in place, chunk by chunk with its code and
+    launch shape (BLOCK, 2 warps: the same partial sums), then ``_hc_normed``'s normed streams with its code (rinv
+    from the stored sums in order, as scalars) from the row just written (re-read from cache). No group sums: the
+    prompt down projection does not read them."""
+
+    r = tl.program_id(0)
+    NC: tl.constexpr = D // BLOCK
+    for c in range(NC):
+        d = c * BLOCK + tl.arange(0, BLOCK)
+        if MODE == 1:
+            branch = tl.load(BR + r * D + d).to(tl.float32)
+        elif MODE == 3 or MODE == 4:
+            acc = tl.load(BR + r * D + d)
+            for k in tl.static_range(1, WORLD):
+                acc = acc + tl.load(BR + k * RS + r * D + d)
+            branch = acc.to(tl.bfloat16).to(tl.float32)
+        elif MODE == 2:
+            acc = tl.zeros((BLOCK,), dtype=tl.float32)
+            for k in tl.static_range(TOPK + 1):
+                wk = tl.load(WTS + r * SLOTS + k)
+                yk = tl.load(Y + (r * SLOTS + k) * D + d).to(tl.float32)
+                acc = acc + yk * wk
+            branch = acc.to(tl.bfloat16).to(tl.float32)
+        for s in tl.static_range(S):
+            hv = tl.load(H + r * (S * D) + s * D + d).to(tl.float32)
+            if MODE != 0:
+                inj = tl.load(INJ + r * S + s).to(tl.float32)
+                hv = (hv + (branch * inj).to(tl.bfloat16).to(tl.float32)).to(tl.bfloat16).to(tl.float32)
+                tl.store(H + r * (S * D) + s * D + d, hv.to(tl.bfloat16))
+            tl.store(PSS + (r * NC + c) * S + s, tl.sum(hv * hv, axis=0))
+    tl.debug_barrier()                                # the row's sums and streams, written above, read back below
+    for s in tl.static_range(S):
+        total = 0.0
+        for c in range(NC):
+            total += tl.load(PSS + (r * NC + c) * S + s)
+        rinv = 1.0 / tl.sqrt(total / D + eps)
+        for c in range(NC):
+            e = s * D + c * BLOCK + tl.arange(0, BLOCK)
+            hv = tl.load(H + r * (S * D) + e).to(tl.float32)
+            w = tl.load(SCALE + e).to(tl.float32)
+            tl.store(NORMED + r * (S * D) + e, (hv * rinv * w).to(tl.bfloat16))
+
+
+def hc_writeback_normed(h: torch.Tensor, pss: torch.Tensor, streams: int, mode: int, scale: torch.Tensor,
+                        normed: torch.Tensor, eps: float, branch: torch.Tensor | None = None,
+                        inject: torch.Tensor | None = None, y: torch.Tensor | None = None,
+                        wts: torch.Tensor | None = None, block: int = 256) -> None:
+    """``hc_writeback(h, h, ...)`` then ``hc_normed`` (without its group sums) in one kernel: the same h, pss and
+    normed bits. ``block`` must be ``hc_writeback``'s (its partial sums' chunks)."""
+
+    rows, wide = h.shape
+    d = wide // streams
+    top = (wts.shape[1] - 1) if wts is not None else 1
+    slots = wts.shape[1] if wts is not None else 1
+    world = branch.shape[0] if mode in (3, 4) else 1
+    rs = rows * d
+    dummy = h
+    _hc_writeback_normed[(rows,)](h, pss, branch if branch is not None else dummy,
+                                  inject if inject is not None else dummy, y if y is not None else dummy,
+                                  wts if wts is not None else dummy, rs, scale, normed, eps, D=d, S=streams,
+                                  MODE=mode, TOPK=top, SLOTS=slots, BLOCK=block, WORLD=world, num_warps=2)
+
+
+@triton.jit
+def _hc_mix_sums(MIXED, XS, D: tl.constexpr, BLOCK: tl.constexpr):
+    """``_hc_mix``'s group sums of the stored mix, with its block and warps (the same reduction)."""
+
+    r = tl.program_id(0)
+    c = tl.program_id(1)
+    d = c * BLOCK + tl.arange(0, BLOCK)
+    m = tl.load(MIXED + r * D + d)
+    sums = tl.sum(tl.reshape(m.to(tl.float32), (BLOCK // 32, 32)), axis=1)
+    tl.store(XS + r * (D // 32) + c * (BLOCK // 32) + tl.arange(0, BLOCK // 32), sums)
+
+
+def hc_mix_sums(mixed: torch.Tensor, xs: torch.Tensor, block: int = 256) -> None:
+    """The 32-dim group sums ``hc_mix`` writes beside ``mixed`` (R, D), for a mix computed elsewhere (F12's up+mix)."""
+
+    rows, d = mixed.shape
+    _hc_mix_sums[(rows, d // block)](mixed, xs, D=d, BLOCK=block, num_warps=2)
+
+
+@triton.jit
 def _moe_partial(Y, WTS, OUT, D: tl.constexpr, TOPK: tl.constexpr, SLOTS: tl.constexpr, BLOCK: tl.constexpr):
     """A tensor-parallel rank's MoE share, fp32: sum_k w_k y_k (slots in order) + w_s y_s, not rounded."""
 
@@ -274,7 +360,7 @@ def rmsnorm(x: torch.Tensor, w: torch.Tensor, eps: float, group: int | None = No
 def _attn_prep(P, POS0, QW, KW, IW, INV, Q, KC, VC, KS, VS, IQ, IKC, ROPE, DELTA, eps,
                PW: tl.constexpr, NQ: tl.constexpr, NKV: tl.constexpr, HD: tl.constexpr, NI: tl.constexpr,
                IHD: tl.constexpr, HALF: tl.constexpr, BITS: tl.constexpr, MODE: tl.constexpr = 0,
-               S1: tl.constexpr = 11, S2: tl.constexpr = 10):
+               S1: tl.constexpr = 11, S2: tl.constexpr = 10, MSCALE: tl.constexpr = 1.0):
     """Normalize stacked q/k/indexer heads in fp32, round to bf16, apply rotate-half RoPE and round again; store keys, values and raw indexer keys at POS0 + r; BITS 8 or 4 quantize keys and values and rotate q alike (q . Hk = Hq . k)."""
 
     r = tl.program_id(0)
@@ -323,6 +409,9 @@ def _attn_prep(P, POS0, QW, KW, IW, INV, Q, KC, VC, KS, VS, IQ, IKC, ROPE, DELTA
             ang = axis.to(tl.float32) * tl.load(INV + i)
         cos = tl.cos(ang)
         sin = tl.sin(ang)
+        if MSCALE != 1.0:                            # YaRN: cos and sin times the attention factor (rotary dims only)
+            cos = cos * MSCALE
+            sin = sin * MSCALE
         rot = tl.where(d < HALF, xn * cos - xpn * sin, tl.where(d < 2 * HALF, xpn * sin + xn * cos, xn))
         out = rot.to(tl.bfloat16)
         if head < NQ:
@@ -369,8 +458,8 @@ def attn_prep(p: torch.Tensor, pos0: torch.Tensor, q_scale, k_scale, i_scale, in
               eps: float, *, q_heads: int, kv_heads: int, head_dim: int, index_heads: int, index_dim: int,
               ks: torch.Tensor | None = None, vs: torch.Tensor | None = None, bits: int = 0,
               rope: torch.Tensor | None = None, delta: torch.Tensor | None = None,
-              sections: tuple[int, int, int] = (11, 11, 10)) -> None:
-    """Write the rows' queries (rotated when the cache is quantized), keys and values; ``bits`` 0 (bf16), 8 or 4 with scales ``ks``/``vs``. Rotary positions: the cache position; plus ``delta`` [1] (text after images); or ``rope`` [rows, 3] (an image prompt's interleaved t/h/w positions, ``sections`` as the checkpoint's mrope_section)."""
+              sections: tuple[int, int, int] = (11, 11, 10), rope_scale: float = 1.0) -> None:
+    """Write the rows' queries (rotated when the cache is quantized), keys and values; ``bits`` 0 (bf16), 8 or 4 with scales ``ks``/``vs``. Rotary positions: the cache position; plus ``delta`` [1] (text after images); or ``rope`` [rows, 3] (an image prompt's interleaved t/h/w positions, ``sections`` as the checkpoint's mrope_section). ``rope_scale``: YaRN's cos/sin multiplier (1.0: plain RoPE, the kernel unchanged)."""
 
     rows, pw = p.shape
     if bits and (ks is None or vs is None):
@@ -382,7 +471,7 @@ def attn_prep(p: torch.Tensor, pos0: torch.Tensor, q_scale, k_scale, i_scale, in
         p, pos0, q_scale, k_scale, i_scale, inv_freq, q, kc, vc, ks, vs, iq, ikc,
         rope if rope is not None else pos0, delta if delta is not None else pos0, eps, PW=pw, NQ=q_heads,
         NKV=kv_heads, HD=head_dim, NI=index_heads, IHD=index_dim, HALF=inv_freq.numel(), BITS=bits, MODE=mode,
-        S1=sections[1], S2=sections[2], num_warps=2)
+        S1=sections[1], S2=sections[2], MSCALE=float(rope_scale), num_warps=2)
 
 
 @triton.jit

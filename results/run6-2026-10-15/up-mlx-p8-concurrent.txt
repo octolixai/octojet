@@ -1,0 +1,20 @@
+{"label": "up-mlx-p8", "prompt": "code", "temperature": 1.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 92.0, "per_stream_tps": 92.0, "ttft_s_max": 0.07}
+{"label": "up-mlx-p8", "prompt": "code", "temperature": 1.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 108.8, "per_stream_tps": 54.4, "ttft_s_max": 0.08, "steady_tps": 115.6}
+{"label": "up-mlx-p8", "prompt": "code", "temperature": 1.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 128.8, "per_stream_tps": 43.0, "ttft_s_max": 0.08, "steady_tps": 136.4}
+{"label": "up-mlx-p8", "prompt": "code", "temperature": 1.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 145.8, "per_stream_tps": 36.8, "ttft_s_max": 0.09, "steady_tps": 154.8}
+{"label": "up-mlx-p8", "prompt": "code", "temperature": 1.0, "streams": 8, "failed": 0, "unmeasured": 0, "aggregate_tps": 188.3, "per_stream_tps": 25.1, "ttft_s_max": 0.16, "steady_tps": 211.2}
+{"label": "up-mlx-p8", "prompt": "chat", "temperature": 1.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 62.4, "per_stream_tps": 62.4, "ttft_s_max": 0.06}
+{"label": "up-mlx-p8", "prompt": "chat", "temperature": 1.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 88.0, "per_stream_tps": 45.7, "ttft_s_max": 0.07, "steady_tps": 90.4}
+{"label": "up-mlx-p8", "prompt": "chat", "temperature": 1.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 106.4, "per_stream_tps": 35.8, "ttft_s_max": 0.08, "steady_tps": 109.1}
+{"label": "up-mlx-p8", "prompt": "chat", "temperature": 1.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 122.3, "per_stream_tps": 31.4, "ttft_s_max": 0.09, "steady_tps": 125.8}
+{"label": "up-mlx-p8", "prompt": "chat", "temperature": 1.0, "streams": 8, "failed": 0, "unmeasured": 0, "aggregate_tps": 167.5, "per_stream_tps": 21.4, "ttft_s_max": 0.2, "steady_tps": 174.0}
+{"label": "up-mlx-p8", "prompt": "code", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 71.4, "per_stream_tps": 71.4, "ttft_s_max": 0.06}
+{"label": "up-mlx-p8", "prompt": "code", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 127.9, "per_stream_tps": 64.0, "ttft_s_max": 0.07, "steady_tps": 127.5}
+{"label": "up-mlx-p8", "prompt": "code", "temperature": 0.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 181.6, "per_stream_tps": 60.6, "ttft_s_max": 0.08, "steady_tps": 180.7}
+{"label": "up-mlx-p8", "prompt": "code", "temperature": 0.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 229.8, "per_stream_tps": 57.5, "ttft_s_max": 0.09, "steady_tps": 228.4}
+{"label": "up-mlx-p8", "prompt": "code", "temperature": 0.0, "streams": 8, "failed": 0, "unmeasured": 0, "aggregate_tps": 380.5, "per_stream_tps": 47.7, "ttft_s_max": 0.16, "steady_tps": 379.3}
+{"label": "up-mlx-p8", "prompt": "chat", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 65.5, "per_stream_tps": 65.5, "ttft_s_max": 0.06}
+{"label": "up-mlx-p8", "prompt": "chat", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 117.6, "per_stream_tps": 58.8, "ttft_s_max": 0.07, "steady_tps": 117.7}
+{"label": "up-mlx-p8", "prompt": "chat", "temperature": 0.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 167.2, "per_stream_tps": 55.8, "ttft_s_max": 0.08, "steady_tps": 167.4}
+{"label": "up-mlx-p8", "prompt": "chat", "temperature": 0.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 211.4, "per_stream_tps": 52.9, "ttft_s_max": 0.09, "steady_tps": 211.5}
+{"label": "up-mlx-p8", "prompt": "chat", "temperature": 0.0, "streams": 8, "failed": 0, "unmeasured": 0, "aggregate_tps": 349.4, "per_stream_tps": 43.7, "ttft_s_max": 0.19, "steady_tps": 350.0}

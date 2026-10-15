@@ -433,11 +433,34 @@ WARM_TAIL = 18      # a partial chunk after a full one: neither its rows nor the
 
 
 @torch.no_grad()
-def warm(e: Engine) -> None:
-    """Prefill a synthetic prompt (a full chunk, then a partial one) and empty the state, so no request compiles or loads a prompt kernel."""
+def warm(e: Engine) -> dict:
+    """Prefill a synthetic prompt (a full chunk, then a partial one) and empty the state, then compile the block
+    selector for every longer context (``warm_long_select``), so no request compiles or loads a prompt kernel."""
 
+    t0 = time.perf_counter()
     prefill(e, [0] * min(e.prefill_rows + WARM_TAIL, e.capacity), None)
     e.reset()
+    torch.cuda.synchronize()
+    info = {"prompt_s": time.perf_counter() - t0}
+    info.update(warm_long_select(e.pbuf.attn))
+    return info
+
+
+def warm_long_select(scratch) -> dict:
+    """F10: the selector specialisations of contexts longer than the startup prompt (``attention.warm_select``; nothing
+    kept, no state touched), unless OCTOJET_WARM_LONG=0. Before F10 the first long prompt compiled them on the request."""
+
+    from . import attention
+    from .warmplan import warm_long
+
+    if not warm_long():
+        return {"select_launches": 0, "select_s": 0.0, "select_skipped": True}
+    t0 = time.perf_counter()
+    launches = attention.warm_select(scratch)
+    if launches:
+        torch.cuda.synchronize()
+    return {"select_launches": launches, "select_s": time.perf_counter() - t0, "select_skipped": False,
+            "select_keys": scratch.nb * scratch.ratio if launches else 0}
 
 
 @dataclass

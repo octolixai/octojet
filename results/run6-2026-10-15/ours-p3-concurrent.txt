@@ -1,0 +1,12 @@
+{"label": "ours-p3", "prompt": "code", "temperature": 1.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 68.8, "per_stream_tps": 68.8, "ttft_s_max": 0.01}
+{"label": "ours-p3", "prompt": "code", "temperature": 1.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 95.1, "per_stream_tps": 47.6, "ttft_s_max": 0.01, "steady_tps": 99.2}
+{"label": "ours-p3", "prompt": "code", "temperature": 1.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 117.5, "per_stream_tps": 39.3, "ttft_s_max": 0.02, "steady_tps": 121.6}
+{"label": "ours-p3", "prompt": "chat", "temperature": 1.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 61.3, "per_stream_tps": 61.3, "ttft_s_max": 0.01}
+{"label": "ours-p3", "prompt": "chat", "temperature": 1.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 82.5, "per_stream_tps": 41.2, "ttft_s_max": 0.01, "steady_tps": 84.7}
+{"label": "ours-p3", "prompt": "chat", "temperature": 1.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 102.1, "per_stream_tps": 36.4, "ttft_s_max": 0.01, "steady_tps": 108.6}
+{"label": "ours-p3", "prompt": "code", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 70.2, "per_stream_tps": 70.2, "ttft_s_max": 0.01}
+{"label": "ours-p3", "prompt": "code", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 127.9, "per_stream_tps": 64.0, "ttft_s_max": 0.01, "steady_tps": 128.1}
+{"label": "ours-p3", "prompt": "code", "temperature": 0.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 176.0, "per_stream_tps": 58.7, "ttft_s_max": 0.01, "steady_tps": 176.2}
+{"label": "ours-p3", "prompt": "chat", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 69.2, "per_stream_tps": 69.2, "ttft_s_max": 0.01}
+{"label": "ours-p3", "prompt": "chat", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 127.3, "per_stream_tps": 63.7, "ttft_s_max": 0.01, "steady_tps": 127.4}
+{"label": "ours-p3", "prompt": "chat", "temperature": 0.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 174.9, "per_stream_tps": 58.3, "ttft_s_max": 0.02, "steady_tps": 175.1}

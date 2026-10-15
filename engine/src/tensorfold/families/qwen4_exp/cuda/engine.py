@@ -45,7 +45,7 @@ class FlashNextEngine:
                  context_explicit: bool | None = None, tp: int = 1, rank: int = 0, master: str = "", port: int = 29551,
                  prefetch: bool = True, graphs: bool = True, streams: int = 1, ple_on_ssd: bool = False,
                  kv_dtype: str = "bf16", packed_cache: str | None = None, vision: bool = False,
-                 vision_urls: bool = False, prefix_checkpoints: int = 0) -> None:
+                 vision_urls: bool = False, prefix_checkpoints: int = 0, rope_yarn: float | None = None) -> None:
         from .nvfp4 import estimate_transform, is_mixed
 
         if tp == 2 and is_mixed(model_dir):
@@ -125,16 +125,26 @@ class FlashNextEngine:
 
         geometry = capacity_geometry(geometry, model_dir, vision, rank, vision_workspace())
         transform = vision_weights(transform, vision, rank)
+        # --rope-yarn (or a checkpoint whose config says rope_type yarn): the native window is original x factor
+        from tensorfold import rope_scaling
+        from tensorfold.cuda.capacity import config as text_config
+
+        text = text_config(model_dir)
+        self.rope_yarn = rope_scaling.yarn_parameters(text, rope_yarn)
+        self.native_window = rope_scaling.window(text, rope_yarn)
+        if self.rope_yarn is not None:
+            print(rope_scaling.describe(self.rope_yarn, self.native_window), flush=True)
         self.capacity_plan = admit(model_dir, max_len, context_explicit, torch, geometry,
                                    transform, rank=rank, world=tp,
                                    gather=gather,
-                                   extra_files=(extra_files(model_dir) if exl3 else ()) + release_files)
+                                   extra_files=(extra_files(model_dir) if exl3 else ()) + release_files,
+                                   native=self.native_window if self.rope_yarn is not None else None)
         self.max_len = self.capacity_plan["cache_slots"]
         if tp == 2:
             self._same_settings(torch, ids)
         w = load(model_dir, mtp=self.depth > 0, tp=(rank, 2) if tp == 2 else None,
                  draft_vocab=draft_vocab if self.depth > 0 else None, ple_on_ssd=ple_on_ssd,
-                 packed_cache=packed_cache)
+                 packed_cache=packed_cache, rope_yarn=rope_yarn)
         w.comm = self.comm
         if self.depth > 0 and w.mtp is None:
             raise ValueError("this checkpoint has no MTP head, which Flash Next's CUDA engine drafts with: use one "
@@ -191,11 +201,12 @@ class FlashNextEngine:
         captured = self.e.graphs.warm(self.depth + 1) if self.e is not None and self.e.graphs is not None else 0
         started = time.perf_counter()
         if self.concurrent:
-            self.multi.warm()
+            self.warm_info = self.multi.warm()
         else:
             from .decode import warm
 
-            warm(self.e)
+            self.warm_info = warm(self.e)
+        print(f"[octojet] warm-up: {warm_line(self.warm_info)}", flush=True)
         if self.vision is not None:          # the tower's kernels load now, not on top of the first image request
             self.vision.warm()
             torch.cuda.empty_cache()
@@ -418,7 +429,7 @@ class FlashNextEngine:
     def generate(self, prompt: list[int], max_tokens: int, sampling,
                  on_tokens: Callable[[list[int]], bool | None], draft: bool = True, timing: bool = False,
                  profile: bool = False, histogram: bool = False, received_at: float = 0.0, *,
-                 vision=None) -> dict[str, Any]:
+                 vision=None, cancelled: Callable[[], bool] | None = None) -> dict[str, Any]:
         """``draft=False``: one token a round with no MTP drafts, from a fresh prefill that leaves the kept states alone: the serial reference; ``vision``: an image prompt's prepared pixels and positions (the scheduler path only)."""
 
         entered = time.perf_counter()                 # the single-stream path's admitted_at (and queued_at)
@@ -438,9 +449,10 @@ class FlashNextEngine:
             if vision is not None:                    # an image prompt: never matched against or kept for reuse
                 return self.scheduler.submit(list(prompt), max_tokens, sampling, draft, on_tokens, timing=timing,
                                              profile=profile, histogram=histogram, received_at=received_at,
-                                             vision=vision)
+                                             vision=vision, cancelled=cancelled)
             return self.scheduler.submit(list(prompt), max_tokens, sampling, draft, on_tokens, timing=timing,
-                                         profile=profile, histogram=histogram, received_at=received_at)
+                                         profile=profile, histogram=histogram, received_at=received_at,
+                                         cancelled=cancelled)
         hit = self._resume(prompt) if draft else None
         if self.tp == 2:                     # rank 0 decodes exactly what it hands rank 1
             prompt, max_tokens, sampling, draft, _, _, _ = self._share(
@@ -497,3 +509,14 @@ def _admission(prefill_fn: Callable[[], int], carrier) -> tuple[int, dict[str, A
     full = carrier.stats()
     return adapter.first, {k: full[k] for k in CARRIED if k in full}
 
+
+def warm_line(info: dict) -> str:
+    """The startup log's warm-up line (F10): the synthetic prompt, then the selector specialisations of longer contexts."""
+
+    head = f"synthetic prompt {info.get('prompt_s', 0.0):.1f}s"
+    if info.get("select_skipped"):
+        return head + "; long-context selector warm-up skipped (OCTOJET_WARM_LONG=0): the first long prompt compiles it"
+    if not info.get("select_launches"):
+        return head + "; no long-context selector to warm (the window never passes the indexer budget)"
+    return (head + f"; block selector compiled for contexts up to {info['select_keys']:,} keys "
+            f"({info['select_launches']} launches) in {info['select_s']:.1f}s")

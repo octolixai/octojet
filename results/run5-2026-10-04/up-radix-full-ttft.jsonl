@@ -1,0 +1,6 @@
+{"label": "cold-m32k", "prompt": "m32k.txt", "prompt_tokens": 32000, "ttft_s": 21.37, "decode_tps": 22.4, "total_s": 24.187, "completion_tokens": 64, "reuse": null, "cached": 0, "utc": "2026-10-04T22:27:39Z"}
+{"label": "cold-m128k", "prompt": "m128k.txt", "prompt_tokens": 128000, "ttft_s": 92.761, "decode_tps": 22.4, "total_s": 95.568, "completion_tokens": 64, "reuse": null, "cached": 0, "utc": "2026-10-04T22:28:03Z"}
+{"label": "cold-m210k", "prompt": "m210k.txt", "prompt_tokens": 210000, "ttft_s": 162.062, "decode_tps": 19.2, "total_s": 165.344, "completion_tokens": 64, "reuse": null, "cached": 0, "utc": "2026-10-04T22:29:39Z"}
+{"label": "P-cold", "prompt": "cP.txt", "prompt_tokens": 71444, "ttft_s": 49.584, "decode_tps": 27.3, "total_s": 51.892, "completion_tokens": 64, "reuse": null, "cached": 0, "utc": "2026-10-04T22:32:24Z"}
+{"label": "Pp-variant", "prompt": "cPp.txt", "prompt_tokens": 71483, "ttft_s": 49.579, "decode_tps": 43.3, "total_s": 51.034, "completion_tokens": 64, "reuse": null, "cached": 0, "utc": "2026-10-04T22:33:16Z"}
+{"label": "P-resend", "prompt": "cP.txt", "prompt_tokens": 71444, "ttft_s": 0.187, "decode_tps": 28.0, "total_s": 2.434, "completion_tokens": 64, "reuse": null, "cached": 71443, "utc": "2026-10-04T22:34:07Z"}

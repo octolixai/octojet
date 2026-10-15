@@ -15,7 +15,7 @@ from tensorfold.cuda.prefill_timing import TIMER
 
 from . import attention as attn_mod
 from . import gdn as gdn_mod
-from . import gdn_io, glue, qmm
+from . import gdn_io, glue, hc_prefill, qmm
 from .state import ATT_ROWS, CAND, Buffers, State
 from .weights import HC, LayerW, Weights
 
@@ -48,6 +48,17 @@ def hc_block(hc: HC, b: Buffers, R: int, eps: float, streams: int, low: int, mod
              inject_out, h: torch.Tensor, branch=None, y=None, wts=None) -> None:
     """Write the pending branch back into the streams h (in place), then the hyper-connection's read-out: b.mixed [R, D] (+ group sums), and its inject gates into ``inject_out``."""
 
+    fused = hc_prefill.choose(hc, b, streams)
+    if fused.norm:                # a prompt chunk: the write-back with the norm, then the rest of the read-out
+        _t = TIMER.begin("writeback")
+        glue.hc_writeback_normed(h[:R], b.pss[:R], streams, mode, hc.scale, b.normed[:R], eps, branch=branch,
+                                 inject=inject_prev, y=y, wts=wts)
+        TIMER.end(_t)
+        _t = TIMER.begin("hc_readout")
+        _down_act(hc, b, R, streams, low, inject_out[:R] if hc.inject else None)
+        _up_mix(hc, b, R, streams, fused.up)
+        TIMER.end(_t)
+        return
     _t = TIMER.begin("writeback")
     glue.hc_writeback(h[:R], h[:R], b.pss[:R], streams, mode, branch=branch, inject=inject_prev, y=y, wts=wts)
     TIMER.end(_t)
@@ -56,7 +67,7 @@ def hc_block(hc: HC, b: Buffers, R: int, eps: float, streams: int, low: int, mod
     TIMER.end(_t)
 
 
-FUSED_ROWS = 16      # decode windows: the read-out in 3 kernels; wider windows (prefill) in 5, the same bits
+FUSED_ROWS = 16      # decode windows: the read-out in 3 kernels; prompt chunks in 4 (hc_prefill) or 5, the same bits
 
 
 def _readout(hc: HC, b: Buffers, h: torch.Tensor, R: int, eps: float, streams: int, low: int, inject) -> None:
@@ -85,6 +96,17 @@ def _readout_plain(hc: HC, b: Buffers, h: torch.Tensor, R: int, eps: float, stre
 
     glue.hc_normed(h[:R], b.pss[:R], hc.scale, b.normed[:R], b.xs_normed[:R], streams, eps)
     _down_act(hc, b, R, streams, low, inject)
+    _up_mix(hc, b, R, streams, hc_prefill.choose(hc, b, streams).up)
+
+
+def _up_mix(hc: HC, b: Buffers, R: int, streams: int, fused: bool) -> None:
+    """The up projection and the stream mix: b.mixed [R, D] and its group sums. ``fused`` (prompt chunks): one kernel
+    and the sums (hc_prefill.upmix, the same bits)."""
+
+    if fused:
+        hc_prefill.upmix(b.act[:R], hc.prefill_up, b.normed[:R], b.mixed[:R], streams)
+        glue.hc_mix_sums(b.mixed[:R], b.xs_mixed[:R])
+        return
     _mm(b.act[:R], hc.prefill_up if b.prefill else hc.up, b.xs_act[:R], b.up[:R], b)
     glue.hc_mix(b.up[:R], b.normed[:R], b.mixed[:R], b.xs_mixed[:R], streams)
 
@@ -186,6 +208,7 @@ def attn_block(layer: LayerW, w: Weights, segs: Sequence[Seg], b: Buffers, R: in
     TIMER.end(_t)
     scale = c.head_dim ** -0.5
     sections = getattr(c, "mrope_section", (11, 11, 10))
+    rope_scale = getattr(w, "rope_scale", 1.0)       # YaRN's cos/sin multiplier; 1.0 (plain RoPE) compiles it out
     for st, a0, a1 in segs:
         cache, ikc, pooled, pos, host_pos = _caches(layer, st, mtp)
         bits = 0 if not cache.quantized else cache.bits
@@ -199,13 +222,13 @@ def attn_block(layer: LayerW, w: Weights, segs: Sequence[Seg], b: Buffers, R: in
         glue.attn_prep(b.pa[a0:a1], pos, a.q_scale, a.k_scale, a.iq_scale, w.inv_freq, b.q[a0:], cache.k, cache.v,
                        b.iq[a0:], ikc, c.eps, q_heads=c.heads, kv_heads=c.kv_heads, head_dim=c.head_dim,
                        index_heads=c.index_heads, index_dim=c.index_dim, ks=cache.ks, vs=cache.vs, bits=bits,
-                       rope=rope, delta=delta, sections=sections)
+                       rope=rope, delta=delta, sections=sections, rope_scale=rope_scale)
         TIMER.end(_t)
         if b.prefill:
             if b.attn.qsa:
                 _t = TIMER.begin("idx_pool")
                 attn_mod.qsa_pool(ikc, pooled, pos, a.ik_scale, w.inv_freq, c.eps, b.attn, a1 - a0, rope=rope,
-                                  delta=delta, sections=sections)
+                                  delta=delta, sections=sections, rope_scale=rope_scale)
                 TIMER.end(_t)
             for r0 in range(a0, a1, ATT_ROWS):
                 n = min(ATT_ROWS, a1 - r0)
@@ -223,7 +246,7 @@ def attn_block(layer: LayerW, w: Weights, segs: Sequence[Seg], b: Buffers, R: in
             continue
         if b.attn.qsa:
             attn_mod.qsa_select(b.iq[a0:a1], ikc, pooled, pos, a.ik_scale, w.inv_freq, c.eps, b.attn, a1 - a0,
-                                context=keys, rope=rope, delta=delta, sections=sections)
+                                context=keys, rope=rope, delta=delta, sections=sections, rope_scale=rope_scale)
         o = attn_mod.attention(b.q[a0:a1], cache.k, cache.v, pos, b.attn, a1 - a0, scale, context=keys,
                                ks=cache.ks, vs=cache.vs, bits=bits)
         if len(segs) > 1:                       # the scratch output is the next stream's too

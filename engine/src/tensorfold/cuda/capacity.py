@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 import math
+import os
 from pathlib import Path
 import re
 import struct
@@ -161,6 +162,22 @@ def page_room(torch) -> int | None:
     return memory["MemAvailable"] if memory is not None and unified(torch) else None
 
 
+TABLE_MARGIN_GIB = 2.0
+
+
+def table_margin() -> int:
+    """Bytes kept free beside the mapped tables' pages: OCTOJET_TABLE_MARGIN_GIB (default 2; 0 = the old plan)."""
+
+    value = os.environ.get("OCTOJET_TABLE_MARGIN_GIB", "").strip()
+    try:
+        gib = float(value) if value else TABLE_MARGIN_GIB
+    except ValueError:
+        raise ValueError(f"OCTOJET_TABLE_MARGIN_GIB: a number of GiB, not {value!r}") from None
+    if gib < 0:
+        raise ValueError("OCTOJET_TABLE_MARGIN_GIB must be 0 or more")
+    return int(gib * GIB)
+
+
 def make_plan(native: int, requested: int | None, explicit: bool, budget: int,
               weights: Weights, geometry: Geometry, room: int | None = None) -> Plan:
     native = int(native)
@@ -184,8 +201,11 @@ def make_plan(native: int, requested: int | None, explicit: bool, budget: int,
 
     fitting, keeps = fit(budget), None
     if not explicit and weights.mapped and room is not None:
-        # a default window leaves the mapped tables their pages (page cache, like the reserve); else they page
-        resident = fit(min(budget, room - weights.mapped))
+        # a default window leaves the mapped tables their pages (page cache, like the reserve); else they page. The
+        # margin covers what the estimate leaves out (CUDA context, allocator slack, compiled kernels): measured on a
+        # Spark, without it the tables lost ~1 GiB of their pages and a 128k prompt re-read 2.3 GB from the SSD,
+        # slowing the GPU's memory-bound kernels by 10-45% on unified memory (Octojet F16)
+        resident = fit(min(budget, room - weights.mapped - table_margin()))
         fitting, keeps = (resident, True) if resident else (fitting, False)
     largest = fit(budget, native if native > 0 else target)
     return Plan(native, requested, bool(explicit), fitting, int(budget), weights, geometry, keeps, largest)
@@ -219,8 +239,9 @@ def admit(model_dir: str | Path, requested: int | None, explicit: bool | None, t
           geometry: Geometry | Callable, transform: Callable, *, rank: int = 0, world: int = 1,
           gather: Callable | None = None, draft_dir: Path | None = None,
           draft_geometry: Geometry | Callable | None = None, startup_copies: int = 0,
-          extra_files: tuple[Path, ...] = (), files: list[Path] | None = None) -> dict:
-    """Reach the same refusal or capacity before either rank allocates model tensors."""
+          extra_files: tuple[Path, ...] = (), files: list[Path] | None = None, native: int | None = None) -> dict:
+    """Reach the same refusal or capacity before either rank allocates model tensors; ``native`` replaces the
+    config's ``max_position_embeddings`` as the native window (YaRN: original x factor)."""
 
     error = None
     plan = None
@@ -242,7 +263,8 @@ def admit(model_dir: str | Path, requested: int | None, explicit: bool | None, t
                 main = geometry
                 geometry = Geometry(lambda slots: main.bytes_at(slots) + draft_geometry.bytes_at(slots),
                                     main.reserve, main.minimum_slots)
-        plan = make_plan(int(text.get("max_position_embeddings") or 0), requested,
+        plan = make_plan(int(native) if native is not None else int(text.get("max_position_embeddings") or 0),
+                         requested,
                          requested is not None if explicit is None else explicit,
                          available_bytes(torch), weights, geometry, room=page_room(torch))
     except (OSError, ValueError, KeyError, TypeError, struct.error) as exc:

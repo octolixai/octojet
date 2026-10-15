@@ -7,8 +7,8 @@ void gdn_tree_cuda(const at::Tensor&, const at::Tensor&, const at::Tensor&, cons
                    const at::Tensor&, const at::Tensor&, const at::Tensor&, const at::Tensor&);
 void gdn_replay_cuda(const at::Tensor&, int, int, const at::Tensor&, const at::Tensor&, const at::Tensor&, int, int,
                      int, bool);
-void gdn_prefill_cuda(const at::Tensor&, const at::Tensor&, const at::Tensor&, const at::Tensor&, const at::Tensor&,
-                      const at::Tensor&, at::Tensor&, at::Tensor&, int);
+bool gdn_prefill_cuda(const at::Tensor&, const at::Tensor&, const at::Tensor&, const at::Tensor&, const at::Tensor&,
+                      const at::Tensor&, at::Tensor&, at::Tensor&, int, bool);
 
 static void check_rows(const at::Tensor& q, const at::Tensor& k, const at::Tensor& v, const at::Tensor& g,
                        const at::Tensor& beta) {
@@ -103,8 +103,10 @@ at::Tensor replay(const at::Tensor& table, int64_t layers, int64_t streams, cons
 }
 
 // A prompt chunk as one chain from ``state``: outputs (W, Hv, 128) bf16, the last row's state into ``last``.
-at::Tensor prefill(const at::Tensor& q, const at::Tensor& k, const at::Tensor& v, const at::Tensor& g,
-                   const at::Tensor& beta, const at::Tensor& state, at::Tensor& last) {
+// ``ahead`` asks for the double-buffered kernel where it applies (same bits); the flag says whether it ran.
+std::tuple<at::Tensor, bool> prefill(const at::Tensor& q, const at::Tensor& k, const at::Tensor& v,
+                                     const at::Tensor& g, const at::Tensor& beta, const at::Tensor& state,
+                                     at::Tensor& last, bool ahead) {
     check_rows(q, k, v, g, beta);
     TORCH_CHECK(v.size(2) == 128, "value heads of 128");
     TORCH_CHECK(state.is_cuda() && state.is_contiguous() && state.scalar_type() == at::kFloat && state.dim() == 3 &&
@@ -115,8 +117,9 @@ at::Tensor prefill(const at::Tensor& q, const at::Tensor& k, const at::Tensor& v
     auto y = at::empty({q.size(0), v.size(1), v.size(2)}, v.options());
     int sms = 0;
     cudaDeviceGetAttribute(&sms, cudaDevAttrMultiProcessorCount, q.get_device());
-    if (q.size(0) > 0) gdn_prefill_cuda(q, k, v, g, beta, state, last, y, sms);
-    return y;
+    bool ran = false;
+    if (q.size(0) > 0) ran = gdn_prefill_cuda(q, k, v, g, beta, state, last, y, sms, ahead);
+    return std::make_tuple(y, ran);
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {

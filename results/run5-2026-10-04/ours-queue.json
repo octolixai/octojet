@@ -1,0 +1,15 @@
+{
+ "delay_s": 5.0,
+ "repeat_ttft_s": 1.895,
+ "repeat_prompt_tokens": 23,
+ "repeat_reuse": "exact",
+ "repeat_cached": 23,
+ "short_ttft_s": 4.536,
+ "short_prompt_tokens": 2335,
+ "short_reuse": null,
+ "short_cached": 0,
+ "long_ttft_s": 62.647,
+ "long_prompt_tokens": 128009,
+ "long_reuse": null,
+ "long_cached": 0
+}

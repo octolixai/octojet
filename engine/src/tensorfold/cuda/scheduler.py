@@ -10,7 +10,9 @@ import time
 from typing import Any, Callable
 
 from .prefill_timing import ENV_OUT, TIMER, TimingBusy
-from .streams import Stream
+from tensorfold.server.cancellation import RequestCancelled
+
+from .streams import Stream, gone
 
 
 def _profiler_start() -> int:
@@ -162,7 +164,8 @@ class Scheduler:
 
     def submit(self, prompt: list[int], count: int, sampling: Any, draft: bool,
                emit: Callable[[list[int]], bool | None], timing: bool = False, profile: bool = False,
-               histogram: bool = False, received_at: float = 0.0, *, vision: Any = None) -> dict:
+               histogram: bool = False, received_at: float = 0.0, *, vision: Any = None,
+               cancelled: Callable[[], bool] | None = None) -> dict:
         """Decode one request; ``emit`` runs on the calling thread and returns True to stop. Returns its stats."""
 
         if (timing or histogram) and TIMER.armed:        # early refusal; the definitive check is in run_admission
@@ -172,6 +175,7 @@ class Scheduler:
                         histogram=histogram, received_at=received_at or time.perf_counter(), vision=vision)
         cancel = [False]
         stream.emit = lambda new: (box.put(("tokens", new)), cancel[0])[1]
+        stream.client_gone = cancelled               # a queued or filling request stops once its client has left
         stream.queued_at = time.perf_counter()
         self.waiting.put((stream, box))
         while True:
@@ -196,6 +200,10 @@ class Scheduler:
 
         now = time.perf_counter()
         for i, (stream, box, since) in enumerate(self.held if first is None else []):
+            if gone(stream):
+                del self.held[i]
+                box.put(("error", RequestCancelled("the client left before the request started")))
+                return self._next()
             if now - since > TWIN_WAIT_S or not waits_for_twin(self.decoder, stream):
                 del self.held[i]
                 return stream, box
@@ -207,6 +215,9 @@ class Scheduler:
                     item = self.waiting.get_nowait()
                 except queue.Empty:
                     return None
+            if gone(item[0]):                         # the client left while it waited: never admitted
+                item[1].put(("error", RequestCancelled("the client left before the request started")))
+                continue
             if waits_for_twin(self.decoder, item[0]):
                 self.held.append((item[0], item[1], now))
                 continue

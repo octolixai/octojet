@@ -105,7 +105,9 @@ class App:
         self.default_thinking = default_thinking
         self.sampling = {"temperature": 1.0, "top_k": 20, "top_p": 0.95, **(sampling or {})}
         self.max_tokens = int(max_tokens)
-        self.native_context_window = _native_context(model_dir)
+        # the engine's native window when it reports one (--rope-yarn: original x factor), else the config's
+        native = getattr(engine, "native_window", None)
+        self.native_context_window = native if type(native) is int and native > 0 else _native_context(model_dir)
         self.context_window = self.native_context_window if context_window is None else int(context_window)
         if self.context_window < 0:
             raise ValueError("context_window must be 0 or a positive token count")
@@ -344,12 +346,16 @@ class App:
         timed = {f: True for f in TIMING_FIELDS if body.get(f) is True and f in params}
         if "received_at" in params:
             timed["received_at"] = received_at
+        if cancelled is not None and "cancelled" in params:   # a queued or filling request stops once the client left
+            timed["cancelled"] = cancelled
         first: list[dict[str, Any]] = []            # the first run's stats: its admission is the one measured
 
         def generate(ids: list[int], count: int, feed: Callable[[list[int]], bool]) -> Any:
             extra = {} if draft else {"draft": False}
             if not first:                           # a gated continuation runs untimed
                 extra.update(timed)
+            elif "cancelled" in timed:              # but it still stops when the client leaves
+                extra["cancelled"] = timed["cancelled"]
             if prepared.vision is not None:         # a gate's continuation keeps the images, positions extended
                 from tensorfold.vision.qwen_processing import continued
 

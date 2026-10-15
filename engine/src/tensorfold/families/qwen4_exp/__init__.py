@@ -125,7 +125,7 @@ def cuda_engine(model_dir: str | Path, *, drafter: str = "", tp: int = 1, rank: 
                 master_port: int = 29551, no_drafts: bool = False, mtp_drafts: int | None = None,
                 mtp_confidence: float | None = None, context: int | None = None, ple_on_ssd: bool = False,
                 kv_dtype: str = "bf16", packed_cache: str | None = None, prefix_checkpoints: int | None = None,
-                **options: Any):
+                rope_yarn: float | None = None, **options: Any):
     """The CUDA engine: MTP chains verified exactly on one GPU or two (``tp=2``; start rank 1 first), keys and values bf16, int8 or int4."""
 
     from tensorfold.cuda.exl3.format import is_exl3
@@ -152,4 +152,5 @@ def cuda_engine(model_dir: str | Path, *, drafter: str = "", tp: int = 1, rank: 
                            ple_on_ssd=ple_on_ssd, kv_dtype=kv_dtype, packed_cache=packed_cache,
                            vision=bool(options.get("vision", False)),
                            vision_urls=bool(options.get("vision_urls", False)),
-                           prefix_checkpoints=PREFIX_CHECKPOINTS if prefix_checkpoints is None else int(prefix_checkpoints))
+                           prefix_checkpoints=PREFIX_CHECKPOINTS if prefix_checkpoints is None else int(prefix_checkpoints),
+                           rope_yarn=None if rope_yarn is None else float(rope_yarn))

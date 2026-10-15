@@ -21,6 +21,7 @@ files used and says so ("config-matched").
 | Name in tables | Engine | Checkpoint |
 |---|---|---|
 | Octojet | Octojet at e53e17d (run 1), 78c1215 (run 2) and 542715f (run 3; engine identical to the published release candidate 230c695) | Octojet mixed NVFP4 as served in production: routed experts from `RadixArk/Qwen3.8-Flash-Next-NVFP4` @ 7b719225242aacd3dbd3f9407468c2ee9a9d2594 (read from a locally derived `-fp8hybrid` copy of that revision, made by blazux/qwen3.8-Flash-DGX @ bd60fcb, whose shared experts are FP8), everything else from `Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` main @ 2b170fa6309d5d1ee380b35636075fac7945f286 (config-matched; download revision not recorded). The published checkpoint takes its shared experts from RadixArk's bf16 copy instead and is re-verified separately |
+| TF 0.6.5 + MLX 4-bit, + lil, + RadixArk (run 5) | TensorFold v0.6.5 (tag commit 609ca419), the latest release on 4 Oct 2026; `--precision full` on the NVFP4 checkpoints | `Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` @ 2b170fa6 and the two checkpoints below |
 | TF 0.6.2 + lil, TF 0.6.2 + RadixArk (run 3) | TensorFold v0.6.2 (tag commit 56e2e3ec), the latest release on 2 Oct 2026; default mode and `--precision full` | the two checkpoints below |
 | TF 0.6 + lil | TensorFold v0.6.0 (tag commit c4646171139ee8a3c38103eaa1699dad226ec12b), the latest release on 1 Oct 2026 | `local-inference-lab/Qwen3.8-Flash-Next-NVFP4` revision 7c4f1bc1a2d6847e0cbc01ac6b823f00251de8dd (99 GB on disk) |
 | TF 0.6 + RadixArk | TensorFold v0.6.0 (same commit) | `RadixArk/Qwen3.8-Flash-Next-NVFP4` revision 7b719225242aacd3dbd3f9407468c2ee9a9d2594, as published (126 GB on disk) |
@@ -33,6 +34,98 @@ How to reproduce: `bench/spark/compare-upstream.sh` (run 1: full mode, accuracy 
 `CONFIGS="ours up-lil"`), timing via `bench/cmp_probe.py`, decode via `engine/tools/bench_openai.py`, agent steps via
 `bench/agent_bench.py`, accuracy via `bench/acc_eval.py` + `bench/run_humaneval.sh`. Details and notes:
 `results/2026-10-01-compare-upstream.md`.
+
+## Multi-stream decode against TensorFold v0.6.5 + MLX 4-bit (run 6, 15 Oct 2026, 09:11-09:32 UTC)
+
+Total decode speed with 1, 2, 3, 4 and 8 requests started at once, on the same box as run 5. Octojet 6db4754 (bench
+branch 691a051, engine identical) on its mixed NVFP4 checkpoint against TensorFold v0.6.5 (609ca419) on
+`Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` @ 2b170fa6, both `--parallel 8`, int8 KV, text only, GPU exclusive, page cache
+dropped before each start, one warm-up request before timing. Tool: `engine/tools/bench_concurrent.py` (code and chat
+prompts, temperature 1.0 and 0, 256 tokens a request with ignore_eos, stream i seeded `1234 + i`; total tok/s = the
+streams' tokens after their first / the span from the first stream's first token to the last stream's last; median of
+3). Script `bench/spark/multi-stream.sh`; raw files `results/run6-2026-10-15/`. No request failed. Earlier runs measured
+how many long streams fit and that concurrent replies equal solo ones, not the total speed.
+
+Run 6, 15 Oct 2026, one session: total decode tok/s with N requests at once, **Octojet 6db4754 / TensorFold v0.6.5 + MLX 4-bit**, both `--parallel 8`, int8 KV, text only (`engine/tools/bench_concurrent.py`: 256 tokens a request, median of 3; higher is better, the higher of each pair in bold). Octojet at `--parallel 3` (production) measured the same at 1-3 requests. At `--parallel 8` Octojet reserves 8 × 63,198 tokens; TensorFold grows each stream's cache while memory lasts (up to 262,144).
+
+| Requests at once | Code, sampled | Chat, sampled | Code, greedy | Chat, greedy |
+|---|---:|---:|---:|---:|
+| 1 | 68.9 / **92.0** | 61.0 / **62.4** | 69.9 / **71.4** | **69.5** / 65.5 |
+| 2 | 94.9 / **108.8** | 82.2 / **88.0** | 127.5 / **127.9** | **127.1** / 117.6 |
+| 3 | 117.5 / **128.8** | 101.8 / **106.4** | 175.9 / **181.6** | **175.2** / 167.2 |
+| 4 | 135.2 / **145.8** | 117.4 / **122.3** | 216.6 / **229.8** | **215.8** / 211.4 |
+| 8 | 180.5 / **188.3** | 158.9 / **167.5** | 332.5 / **380.5** | 331.4 / **349.4** |
+
+Octojet at `--parallel 3` (production's setting, window 3 × 240,823), total tok/s:
+
+| Requests at once | Code, sampled | Chat, sampled | Code, greedy | Chat, greedy |
+|---|---:|---:|---:|---:|
+| 1 | 68.8 | 61.3 | 70.2 | 69.2 |
+| 2 | 95.1 | 82.5 | 127.9 | 127.3 |
+| 3 | 117.5 | 102.1 | 176.0 | 174.9 |
+
+Per-stream speed at eight requests: Octojet 20.9-41.6 tok/s, TensorFold 21.4-47.7. Longest time to first token on
+these short prompts: Octojet 0.03-0.04 s, TensorFold 0.16-0.20 s. The single-request rows use a different prompt set
+and length from run 5's decode rows, so the two runs' decode numbers are not interchangeable.
+
+Reading: TensorFold on the MLX 4-bit checkpoint gets more total decode out of most cells, by 0.3-15% (34% for a single
+sampled code request, where its drafts are accepted more often); Octojet leads greedy chat from one to four requests.
+Octojet's eight streams are each capped at 63,198 tokens by its up-front reservation; TensorFold's share 22.6 GiB of
+cache and grow on demand.
+
+Published by others, not measured here (different checkpoints, KV formats and prompts; for orientation only): MiaAI-Lab's
+recipe on TensorFold's Zig engine (commit db281878, INT4-AutoRound checkpoint, fp8 KV) reports 64.4 tok/s for one
+request and 200.9 tok/s for eight, and 54.3 s to the first token of a 128k prompt (8 Oct 2026); a vLLM nightly recipe on
+NVIDIA's NVFP4 checkpoint reports a 67.5 tok/s median single-stream decode and 90.7 tok/s for six streams (NVIDIA
+developer forum, 8 Oct 2026); blazux's vLLM 0.31 recipe reports about 34 tok/s for one stream and 2,400-3,000 tok/s
+prefill at 8k-32k (6 Oct 2026).
+
+## Head-to-head against TensorFold v0.6.5 on all three published checkpoints (run 5, 4 Oct 2026, ~21:45-22:43 UTC)
+
+Octojet 6db4754 (0.1.1 as of this run: F10 warm-up of the long-prompt kernels, F12 fused HC read-out in prompts, F14 GDN
+chain load-ahead, F17 n-gram tables kept resident; every token identical to earlier builds) against TensorFold v0.6.5
+(609ca419) on `Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` @ 2b170fa6 and, with `--precision full`, on the two NVFP4
+checkpoints. Same settings as run 4 (int8 KV, `--parallel 3`, text only, GPU exclusive, page cache dropped before each
+start, client-side timing); accuracy not rerun. Raw files: `results/run5-2026-10-04/`.
+
+| Name in tables | Engine | Checkpoint |
+|---|---|---|
+| Octojet | Octojet at 6db4754 (run 5) | Octojet mixed NVFP4 as served in production (routed experts from `RadixArk/Qwen3.8-Flash-Next-NVFP4` @ 7b719225, everything else from `Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` @ 2b170fa6) |
+| TF 0.6.5 + MLX 4-bit | TensorFold v0.6.5 (609ca419), the latest release on 4 Oct 2026 | `Vontra/Qwen3.8-Flash-Next-MLX-4bit-MTP` @ 2b170fa6, the checkpoint of MiaAI-Lab's single-Spark TensorFold recipe |
+| TF 0.6.5 + lil | TensorFold v0.6.5, `--precision full` | `local-inference-lab/Qwen3.8-Flash-Next-NVFP4` @ 7c4f1bc1 |
+| TF 0.6.5 + RadixArk | TensorFold v0.6.5, `--precision full` | `RadixArk/Qwen3.8-Flash-Next-NVFP4` @ 7b719225, as published |
+
+| Measure | Octojet | TF 0.6.5 + MLX 4-bit | TF 0.6.5 + lil | TF 0.6.5 + RadixArk |
+|---|---:|---:|---:|---:|
+| Cold 32k-token prompt, first token | 15.8 | 12.8 | 19.1 | 21.4 |
+| Cold 128k-token prompt, first token | 58.6 | 57.3 | 83.4 | 92.8 |
+| Cold 210k-token prompt, first token | 107.2 | 104.2 | 143.7 | 162.1 |
+| Cold 71k-token prompt, first token | 30.5 | 30.3 | 44.1 | 49.6 |
+| Prompt sharing 69k of those 71k tokens | 3.1 | 29.2 | 44.1 | 49.6 |
+| The 71k prompt resent | 0.13 | 0.17 | 0.20 | 0.19 |
+| Decode, code prompt, temperature 1 (tok/s) | 64.1 | 68.3 | 52.2 | 41.4 |
+| Decode, chat prompt, temperature 1 (tok/s) | 62.1 | 56.4 | 44.2 | 32.5 |
+| Decode, code prompt, greedy (tok/s) | 61.5 | 66.9 | 55.5 | 46.2 |
+| Decode, chat prompt, greedy (tok/s) | 86.0 | 63.2 | 43.2 | 37.4 |
+| Agent: 80k-token first turn, first token | 49.6 | 46.6 | 66.4 | 74.1 |
+| Agent: +5k-token follow-up, first token (median of 3) | 4.18 | 5.49 | 5.26 | 6.58 |
+| Agent: +5k-token follow-up, whole step (median of 3) | 11.5 | 13.8 | 15.7 | 21.8 |
+| A short prompt sent while a cold 128k prompt fills, first token | 4.54 | 2.84 | 3.47 | 3.15 |
+| A resend sent while a cold 128k prompt fills, first token | 1.90 | 3.83 | 2.46 | 2.25 |
+| Longest pause of a live reply while a 128k prompt arrives | 1.32 | 1.33 | 1.62 | 1.80 |
+| Typical pause of a live reply while a 128k prompt arrives (median gap) | 0.66 | 1.19 | 1.45 | 1.62 |
+| That 128k prompt's first token while the reply streams | 84.3 | 74.9 | 92.8 | 102.7 |
+| Startup memory estimate (GiB) | 86.2 | 84.3 | 81.5 | 97.4 |
+| Context windows | 3 × 243,197 reserved | up to 3 × 262,144 | up to 3 × 262,144 | up to 3 × 262,144 |
+
+Octojet's window is what its memory plan reserves for three text-only streams after keeping 2 GiB beside its mapped n-gram tables (0.1.1); TensorFold grows each stream's cache while memory lasts.
+
+Reading: against run 4, Octojet's cold prompts from 71k up are 5-14% sooner (128k 67.6 → 58.6 s) and its first long prompt no
+longer pays a one-time cost, so TensorFold on the MLX 4-bit checkpoint now leads cold prompts by 1-3% from 71k up and
+by 3 s at 32k. It still leads code decode (7-9%), a short prompt sent during a fill (2.8 against 4.5 s; Octojet's was
+3.3 s in run 4, under investigation), the 128k prompt that arrives while a reply streams (74.9 against 84.3 s) and
+memory (2 GiB). Octojet leads prompts that repeat or share a prefix (9.4x on the variant), a resend during a fill,
+agent follow-ups, chat decode and how smoothly live replies stream during a fill.
 
 ## Head-to-head against TensorFold v0.6.2 on all three published checkpoints (run 4, 3 Oct 2026, ~17:52-18:45 UTC)
 
@@ -218,7 +311,7 @@ Everything Octojet is built on, compared against or measured with. The model car
 - NVIDIA NVFP4 (cited for context, not benchmarked): https://huggingface.co/nvidia/Qwen3.8-Flash-Next-NVFP4
 
 **Engines**
-- TensorFold, which Octojet forks (v0.3.6.2, commit 71377a5; MIT up to v0.5, Apache-2.0 from v0.6.0): https://github.com/ashhart/TensorFold. Compared against at v0.6.0 (c4646171). Ported from upstream: vision (v0.3.6.3), tiled sparse-attention block selection above 131,072 keys (a2dba9c), prompts inside decode rounds (d23087c, 68c6e35).
+- TensorFold, which Octojet forks (v0.3.6.2, commit 71377a5; MIT up to v0.5, Apache-2.0 from v0.6.0): https://github.com/ashhart/TensorFold. Compared against at v0.6.0 (c4646171), v0.6.2 (56e2e3ec) and v0.6.5 (609ca419). Ported from upstream: vision (v0.3.6.3), tiled sparse-attention block selection above 131,072 keys (a2dba9c), prompts inside decode rounds (d23087c, 68c6e35).
 - vLLM: https://github.com/vllm-project/vllm, as built by https://github.com/blazux/qwen3.8-Flash-DGX @ bd60fcb1b492ca920f74df7462f05da7b6d98f73
 - ExLlamaV3 (EXL3 format; int8/int4 KV cache scheme): https://github.com/turboderp-org/exllamav3
 

@@ -24,6 +24,42 @@ release notes, kept as they were; their commands read `tensorfold ...`, which is
   runs, production settings with images on). Its chunks also run on their own CUDA stream
   (`OCTOJET_FILL_STREAM`), so decode steps never queue behind a chunk and the next chunk is queued while one runs.
   `OCTOJET_ROUND_LOG=<file>` records each round's chunk and decode seconds for measurement.
+- **A request whose client has left stops using the GPU.** A queued request is dropped before it is admitted, and a
+  prompt that is filling stops at its next chunk and frees its stream, instead of filling to its first token. Under
+  overload with client retries (each retry used to refill its abandoned predecessor's prompt) this keeps the queue
+  from snowballing. Logged as `[octojet] the client left; prompt fill stopped at N/M rows`.
+- **The first long prompt after a start no longer compiles kernels.** The startup warm-up now also compiles the
+  sparse-attention block selector for every context length the window allows (one Triton specialisation per
+  power-of-two count of key blocks, which the short warm-up prompt never reached), so a server is warm when it
+  says "serving". The startup log's `warm-up:` line gives its time; `OCTOJET_WARM_LONG=0` skips it.
+- **MTP chains stop under 70% confidence by default (was 30%).** A sweep over 40 code and chat prompts on the Spark
+  (`bench/spark/f10-mtp.sh`, 0.2 / 0.3 / 0.5 / 0.7) found 0.7 fastest overall (geometric mean +3.5%; chat greedy +13%,
+  code within 2%), with identical tokens at every setting. `--mtp-confidence` still overrides it.
+- **524,288-token windows with YaRN.** `--rope-yarn FACTOR` (Flash Next on CUDA) applies YaRN rotary scaling
+  (transformers' `_compute_yarn_parameters`: new frequencies and the 0.1 ln(factor) + 1 attention factor) to every
+  rotary consumer and multiplies the native window by the factor: `--rope-yarn 2` gives 524,288 tokens, and
+  the startup plan fits as many tokens as memory allows. On one Spark (int8 KV, text only, production flags) that
+  measured 3 x 287,904 or 2 x 450,086; one stream gets the full 524,288. A planted fact was found at 128k and 256k
+  at every depth, a cold 449,510-token prompt answered correctly (first token in 307 s), and GSM8K / HumanEval
+  stayed level (0.98 / 157 of 164 with YaRN against 0.98 / 155 without). A checkpoint whose config already says
+  `rope_type: yarn` is honoured; without the option nothing changes.
+  (`--rope-yarn` changes replies by design; with it, drafted still equals serial and concurrent equals solo.)
+- **Fewer memory round trips in a prompt's hyper-connections.** A prompt chunk's hyper-connection read-out now
+  writes the streams back and normalises them in one kernel, and runs the up projection with the stream mix in its
+  epilogue, so a [rows, 4 x 2,560] tensor is no longer written and read again at each of the 96 read-outs a chunk.
+  The bits are the separate kernels' (the matmul keeps the prefill matmul's chain; the mix repeats its operations in
+  order). `OCTOJET_PREFILL_HC_FUSED=0` returns to the separate kernels (`norm` or `up` keeps one fusion). Idea from
+  TensorFold 0.6.1 (fused GB10 prompt kernels for the HC write-back/norm and up/mix); Octojet's own implementation.
+- **The DeltaNet prompt chain loads ahead.** A prompt chunk's gated-delta chain now keeps two stage buffers and
+  copies the next 32 rows' keys, queries, values and gates (cp.async) while it steps the current 32, so the loads
+  are off the chain's serial path. The steps are the same operations in the same order, so the bits are the staged
+  kernel's. `OCTOJET_GDN_CHAIN_AHEAD=0` returns to the staged kernel (bf16 keys and unaligned rows always use it).
+  Idea from TensorFold 0.6.2 (the GDN prompt chain loads a stage ahead); Octojet's own implementation.
+- **The n-gram tables stay in memory beside the caches.** A default window now leaves the memory-mapped n-gram tables
+  their pages plus a 2 GiB margin (`OCTOJET_TABLE_MARGIN_GIB`; 0 = the old plan). Without it, at `--parallel 3` the
+  tables lost about 1 GiB of their pages, a cold 128k prompt re-read 2.3 GB from the SSD, and that traffic slowed the
+  GPU's memory-bound kernels by 10-45% on the GB10's unified memory (128k: 61.2 s against 56.1 s with the tables
+  resident). Costs about 2 GiB of cache, roughly 30k tokens a stream at `--parallel 4`.
 - Replies are unchanged by all of these: drafted replies equal serial ones and concurrent replies equal solo runs.
 
 ## 0.1.0 (October 2026)

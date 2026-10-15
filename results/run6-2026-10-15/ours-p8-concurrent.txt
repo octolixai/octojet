@@ -1,0 +1,20 @@
+{"label": "ours-p8", "prompt": "code", "temperature": 1.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 68.9, "per_stream_tps": 68.9, "ttft_s_max": 0.01}
+{"label": "ours-p8", "prompt": "code", "temperature": 1.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 94.9, "per_stream_tps": 48.9, "ttft_s_max": 0.01, "steady_tps": 99.0}
+{"label": "ours-p8", "prompt": "code", "temperature": 1.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 117.5, "per_stream_tps": 40.9, "ttft_s_max": 0.01, "steady_tps": 121.2}
+{"label": "ours-p8", "prompt": "code", "temperature": 1.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 135.2, "per_stream_tps": 35.1, "ttft_s_max": 0.02, "steady_tps": 140.1}
+{"label": "ours-p8", "prompt": "code", "temperature": 1.0, "streams": 8, "failed": 0, "unmeasured": 0, "aggregate_tps": 180.5, "per_stream_tps": 23.2, "ttft_s_max": 0.03, "steady_tps": 189.1}
+{"label": "ours-p8", "prompt": "chat", "temperature": 1.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 61.0, "per_stream_tps": 61.0, "ttft_s_max": 0.0}
+{"label": "ours-p8", "prompt": "chat", "temperature": 1.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 82.2, "per_stream_tps": 43.0, "ttft_s_max": 0.01, "steady_tps": 83.8}
+{"label": "ours-p8", "prompt": "chat", "temperature": 1.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 101.8, "per_stream_tps": 36.3, "ttft_s_max": 0.01, "steady_tps": 109.1}
+{"label": "ours-p8", "prompt": "chat", "temperature": 1.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 117.4, "per_stream_tps": 31.1, "ttft_s_max": 0.02, "steady_tps": 124.4}
+{"label": "ours-p8", "prompt": "chat", "temperature": 1.0, "streams": 8, "failed": 0, "unmeasured": 0, "aggregate_tps": 158.9, "per_stream_tps": 20.9, "ttft_s_max": 0.03, "steady_tps": 166.3}
+{"label": "ours-p8", "prompt": "code", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 69.9, "per_stream_tps": 69.9, "ttft_s_max": 0.0}
+{"label": "ours-p8", "prompt": "code", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 127.5, "per_stream_tps": 63.8, "ttft_s_max": 0.01, "steady_tps": 127.7}
+{"label": "ours-p8", "prompt": "code", "temperature": 0.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 175.9, "per_stream_tps": 58.7, "ttft_s_max": 0.01, "steady_tps": 176.1}
+{"label": "ours-p8", "prompt": "code", "temperature": 0.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 216.6, "per_stream_tps": 54.2, "ttft_s_max": 0.01, "steady_tps": 216.8}
+{"label": "ours-p8", "prompt": "code", "temperature": 0.0, "streams": 8, "failed": 0, "unmeasured": 0, "aggregate_tps": 332.5, "per_stream_tps": 41.6, "ttft_s_max": 0.03, "steady_tps": 332.9}
+{"label": "ours-p8", "prompt": "chat", "temperature": 0.0, "streams": 1, "failed": 0, "unmeasured": 0, "aggregate_tps": 69.5, "per_stream_tps": 69.5, "ttft_s_max": 0.01}
+{"label": "ours-p8", "prompt": "chat", "temperature": 0.0, "streams": 2, "failed": 0, "unmeasured": 0, "aggregate_tps": 127.1, "per_stream_tps": 63.5, "ttft_s_max": 0.01, "steady_tps": 127.2}
+{"label": "ours-p8", "prompt": "chat", "temperature": 0.0, "streams": 3, "failed": 0, "unmeasured": 0, "aggregate_tps": 175.2, "per_stream_tps": 58.5, "ttft_s_max": 0.01, "steady_tps": 175.3}
+{"label": "ours-p8", "prompt": "chat", "temperature": 0.0, "streams": 4, "failed": 0, "unmeasured": 0, "aggregate_tps": 215.8, "per_stream_tps": 54.0, "ttft_s_max": 0.02, "steady_tps": 216.0}
+{"label": "ours-p8", "prompt": "chat", "temperature": 0.0, "streams": 8, "failed": 0, "unmeasured": 0, "aggregate_tps": 331.4, "per_stream_tps": 41.5, "ttft_s_max": 0.04, "steady_tps": 332.1}
